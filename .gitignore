@@ -53,3 +53,6 @@ Desktop.ini
 # ambiente local de build Android (JDK, SDK, Gradle) e APKs gerados
 /.android-env
 /builds
+
+# configurações locais do Claude Code
+/.claude
