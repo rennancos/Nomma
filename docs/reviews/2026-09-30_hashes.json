@@ -1,0 +1,22 @@
+[
+  {
+    "Path": "A:\\Projetos\\app_financeiro\\app.json",
+    "Hash": "B178A76F5E6A755CCB8C953C104243A9BC550E691009216F9E0ACBE113481858"
+  },
+  {
+    "Path": "A:\\Projetos\\app_financeiro\\package.json",
+    "Hash": "254197043AEDD2191E7CD5CDCFB50FD7F623D43EC8B19035AFBD76C4A08C0BF6"
+  },
+  {
+    "Path": "A:\\Projetos\\app_financeiro\\package-lock.json",
+    "Hash": "2CF4B798E245493A5083470CD05DAD06B41F6049FB28072BBB08E3B40A1AFC15"
+  },
+  {
+    "Path": "A:\\Projetos\\app_financeiro\\tsconfig.json",
+    "Hash": "BE1269E890C659A7E306479F6B963D5B867E6283B0E4E3CB9DFAA5C06AEB83E2"
+  },
+  {
+    "Path": "A:\\Projetos\\app_financeiro\\eslint.config.js",
+    "Hash": "6A8A46AF490A667C5C00F53C5EC76AA08C9CCC1590C599E6CA0975723554F138"
+  }
+]

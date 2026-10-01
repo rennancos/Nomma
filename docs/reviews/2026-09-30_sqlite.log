@@ -1,0 +1,12 @@
+PASS migration banco limpo e segunda execução preserva dados
+PASS CRUD e persistência após fechar/reabrir SQLite no host
+PASS FK e rollback de compra inválida
+PASS seed e remoção preservam transação do usuário
+PASS rejeita centavos fracionários
+PASS backup JSON mantém centavos e acentos
+PASS CSV neutraliza fórmulas e escapa retorno de carro
+PASS pagamento repetido com snapshot antigo não duplica despesa
+FAIL recorrência lançada duas vezes é idempotente: Expected values to be strictly equal:
+
+2 !== 1
+

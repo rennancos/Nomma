@@ -1,0 +1,13 @@
+
+> financas@1.0.0 test
+> jest --runInBand
+
+PASS src/utils/__tests__/review-regressions.test.ts
+PASS src/services/finance/__tests__/finance.test.ts
+PASS src/utils/__tests__/money-date.test.ts
+
+Test Suites: 3 passed, 3 total
+Tests:       40 passed, 40 total
+Snapshots:   0 total
+Time:        4.527 s
+Ran all test suites.

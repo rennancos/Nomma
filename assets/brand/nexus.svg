@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Nexus: duas formas que convergem e se entrelaçam no centro formando o N da Noma.
+       Cores: Primary Light #3B82F6 -> Accent #0EA5E9 (docs/COLOR_SYSTEM.md). -->
+  <defs>
+    <linearGradient id="leg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#2563EB"/>
+    </linearGradient>
+    <linearGradient id="flow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#38BDF8"/>
+      <stop offset="1" stop-color="#0EA5E9"/>
+    </linearGradient>
+  </defs>
+  <!-- Forma B: perna direita + braço que desce até o centro (por baixo da diagonal). -->
+  <path d="M64 18H82V82H64Z" fill="url(#leg)"/>
+  <path d="M82 18L52 54L44 43L64 18Z" fill="#1D4ED8"/>
+  <!-- Forma A: perna esquerda + diagonal do N (por cima, no ponto de convergência). -->
+  <path d="M18 18H36V82H18Z" fill="url(#leg)"/>
+  <path d="M18 18H36L82 82H64Z" fill="url(#flow)"/>
+</svg>

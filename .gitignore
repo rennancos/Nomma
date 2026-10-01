@@ -31,7 +31,17 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
+.env.*
+!.env.example
 .env*.local
+
+# test coverage
+/coverage/
+
+# Windows
+Thumbs.db
+Desktop.ini
 
 # typescript
 *.tsbuildinfo
@@ -39,3 +49,7 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# ambiente local de build Android (JDK, SDK, Gradle) e APKs gerados
+/.android-env
+/builds
