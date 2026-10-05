@@ -41,7 +41,7 @@ export default function RecurringFormScreen() {
   );
 
   return (
-    <Screen>
+    <Screen size="form">
       <Stack.Screen options={{ title: existing ? 'Editar recorrência' : 'Nova recorrência' }} />
       <FormChips
         control={control}

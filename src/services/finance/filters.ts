@@ -1,4 +1,5 @@
 import type { Transaction, TransactionType } from '@/types';
+import { monthKeyOf } from '@/utils/date';
 
 export interface TransactionFilter {
   search: string;
@@ -36,4 +37,18 @@ export function filterTransactions<T extends Transaction>(
       (f.maxAmount === null || t.amount <= f.maxAmount) &&
       (!q || normalize(`${t.description} ${t.notes ?? ''} ${categoryName(t.categoryId)}`).includes(q)),
   );
+}
+
+/**
+ * Lançamentos de um tipo no mês ('yyyy-MM'), do mais recente ao mais antigo.
+ * Mesma regra do resumo do Início (monthSummary): o mês vem do texto da data, sem conversão de fuso.
+ */
+export function entriesOfMonth<T extends Pick<Transaction, 'type' | 'date' | 'createdAt'>>(
+  txs: T[],
+  type: TransactionType,
+  month: string,
+): T[] {
+  return txs
+    .filter((t) => t.type === type && monthKeyOf(t.date) === month)
+    .sort((a, b) => (a.date === b.date ? b.createdAt.localeCompare(a.createdAt) : b.date.localeCompare(a.date)));
 }

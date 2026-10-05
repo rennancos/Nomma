@@ -30,7 +30,7 @@ export default function CardFormScreen() {
   const onSubmit = handleSubmit((v) => run((db) => saveCard(db, v, existing?.id), () => router.back()));
 
   return (
-    <Screen>
+    <Screen size="form">
       <Stack.Screen options={{ title: existing ? 'Editar cartão' : 'Novo cartão' }} />
       <FormField control={control} name="name" label="Nome do cartão" placeholder="Nubank" maxLength={40} />
       <FormField control={control} name="bank" label="Banco" placeholder="Opcional" maxLength={40} />

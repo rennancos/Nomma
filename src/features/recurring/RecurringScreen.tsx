@@ -1,8 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { View } from 'react-native';
 import { Button } from '@/components/Controls';
-import { Card, EmptyState, ListRow, Screen, Section, Stat, styles } from '@/components/Layout';
+import { Card, EmptyState, ListRow, Screen, Section, Stat, StatGrid } from '@/components/Layout';
 import { AppText, Money } from '@/components/Text';
 import { useAction, useFinance } from '@/hooks/useFinance';
 import { usePlan } from '@/hooks/usePlan';
@@ -20,12 +19,12 @@ export default function RecurringScreen() {
   const monthItems = plan.items.filter((i) => i.source === 'RECURRING');
 
   return (
-    <Screen>
-      <View style={styles.grid}>
+    <Screen size="list">
+      <StatGrid>
         <Stat label="Fixos previstos"><Money value={plan.fixed.expected} variant="subtitle" /></Stat>
         <Stat label="Pagos" color={colors.income}><Money value={plan.fixed.paid} variant="subtitle" color={colors.income} /></Stat>
         <Stat label="Pendentes" color={colors.warning}><Money value={plan.fixed.pending} variant="subtitle" color={colors.warning} /></Stat>
-      </View>
+      </StatGrid>
 
       <Section title="Este mês">
         <Card>

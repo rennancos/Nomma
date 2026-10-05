@@ -12,7 +12,7 @@ export default function AccountsScreen() {
   const { balances } = usePlan();
   const { colors } = useTheme();
   return (
-    <Screen>
+    <Screen size="list">
       <Card>
         {data.accounts.map((a) => {
           const balance = balances.get(a.id) ?? 0;

@@ -45,7 +45,7 @@ export default function SettingsScreen() {
     });
 
   return (
-    <Screen>
+    <Screen size="form">
       <FormField control={control} name="userName" label="Seu nome" placeholder="Opcional" maxLength={40} />
       <FormField control={control} name="payday" label="Dia do salário" keyboardType="number-pad" maxLength={2} />
       <AppText variant="small" muted>Usado para calcular quanto você pode gastar por dia até o próximo salário.</AppText>

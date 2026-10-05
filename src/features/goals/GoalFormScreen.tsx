@@ -29,7 +29,7 @@ export default function GoalFormScreen() {
   const onSubmit = handleSubmit((v) => run((db) => saveGoal(db, v, existing?.id), () => router.back()));
 
   return (
-    <Screen>
+    <Screen size="form">
       <Stack.Screen options={{ title: existing ? 'Editar meta' : 'Nova meta' }} />
       <FormField control={control} name="name" label="Meta" placeholder="Reserva de emergência" maxLength={60} />
       <FormField control={control} name="targetAmount" label="Valor da meta (R$)" keyboardType="decimal-pad" placeholder="20.000,00" />

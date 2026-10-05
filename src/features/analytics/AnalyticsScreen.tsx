@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { BarChart, HBarList, Legend, TrendChart } from '@/components/Charts';
 import { ChipSelect } from '@/components/Controls';
-import { Card, EmptyState, Screen, Section, Stat, styles } from '@/components/Layout';
+import { Card, EmptyState, Screen, Section, Stat, StatGrid, styles } from '@/components/Layout';
 import { AppText, Money } from '@/components/Text';
 import { spacing } from '@/constants/theme';
 import { useFinance } from '@/hooks/useFinance';
@@ -127,7 +127,7 @@ export default function AnalyticsScreen() {
 
       <View style={{ gap: spacing.sm }}>
         <AppText variant="subtitle">{title}</AppText>
-        <View style={styles.grid}>
+        <StatGrid>
           <Stat label={t('analytics.income')} color={colors.income}>
             <Money value={summary.income} variant="subtitle" />
             <Delta current={summary.income} previous={previous.income} show={hasPrevious} />
@@ -145,7 +145,7 @@ export default function AnalyticsScreen() {
             <AppText variant="caption" muted>{t('analytics.ofIncome', { pct: pct(summary.savingsRate) })}</AppText>
             <Delta current={summary.savings} previous={previous.savings} show={hasPrevious} />
           </Stat>
-        </View>
+        </StatGrid>
       </View>
 
       {!hasData(summary) || !month ? (

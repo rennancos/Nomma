@@ -32,7 +32,7 @@ export default function AccountFormScreen() {
   const onSubmit = handleSubmit((v) => run((db) => saveAccount(db, v, existing?.id), () => router.back()));
 
   return (
-    <Screen>
+    <Screen size="form">
       <Stack.Screen options={{ title: existing ? 'Editar conta' : 'Nova conta' }} />
       <FormField control={control} name="name" label="Nome" placeholder="Nubank, Itaú, Carteira..." maxLength={60} />
       <FormChips control={control} name="type" label="Tipo" options={TYPES.map((t) => ({ value: t, label: ACCOUNT_TYPE_LABELS[t] }))} />

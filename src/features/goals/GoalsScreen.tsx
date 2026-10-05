@@ -13,7 +13,7 @@ export default function GoalsScreen() {
   const { data } = useFinance();
   const { colors } = useTheme();
   return (
-    <Screen>
+    <Screen size="list">
       {data.goals.length === 0 && (
         <Card><EmptyState icon="flag-outline" title="Nenhuma meta" message="Ex.: Reserva de emergência de R$ 20.000." /></Card>
       )}

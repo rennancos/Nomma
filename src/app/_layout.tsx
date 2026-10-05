@@ -39,6 +39,7 @@ const TITLES: Record<string, string> = {
   settings: 'Configurações',
   'transaction/new': 'Nova movimentação',
   'transaction/[id]': 'Movimentação',
+  entries: 'Lançamentos do mês',
 };
 
 function AppShell() {

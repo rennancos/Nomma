@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { View } from 'react-native';
 import { ProgressBar } from '@/components/Charts';
-import { Card, EmptyState, ListRow, Screen, Section, Stat, styles } from '@/components/Layout';
+import { Card, Columns, EmptyState, ListRow, Screen, Section, Stat, StatGrid, styles } from '@/components/Layout';
 import { AppText, Money } from '@/components/Text';
 import { useFinance } from '@/hooks/useFinance';
 import { usePlan } from '@/hooks/usePlan';
@@ -19,6 +19,10 @@ function Line({ label, value, color }: { label: string; value: number; color?: s
     </View>
   );
 }
+
+type EntryType = 'INCOME' | 'EXPENSE' | 'INVESTMENT';
+const openEntries = (type: EntryType, month: string) => router.push({ pathname: '/entries', params: { type, month } });
+const addEntry = (type: EntryType) => router.push({ pathname: '/transaction/new', params: { type } });
 
 export default function DashboardScreen() {
   const { data } = useFinance();
@@ -43,107 +47,131 @@ export default function DashboardScreen() {
         </AppText>
       </Card>
 
-      <View style={styles.grid}>
-        <Stat label="Receitas do mês" color={colors.income}>
+      <StatGrid>
+        <Stat
+          label="Receitas do mês"
+          color={colors.income}
+          onPress={() => openEntries('INCOME', plan.month)}
+          onAdd={() => addEntry('INCOME')}
+          addLabel="Adicionar receita"
+        >
           <Money value={summary.income} variant="subtitle" color={colors.income} />
         </Stat>
-        <Stat label="Despesas" color={colors.expense}>
+        <Stat
+          label="Despesas"
+          color={colors.expense}
+          onPress={() => openEntries('EXPENSE', plan.month)}
+          onAdd={() => addEntry('EXPENSE')}
+          addLabel="Adicionar despesa"
+        >
           <Money value={summary.expenses} variant="subtitle" color={colors.expense} />
         </Stat>
-        <Stat label="Investimentos" color={colors.investment}>
+        <Stat
+          label="Investimentos"
+          color={colors.investment}
+          onPress={() => openEntries('INVESTMENT', plan.month)}
+          onAdd={() => addEntry('INVESTMENT')}
+          addLabel="Adicionar investimento"
+        >
           <Money value={summary.investments} variant="subtitle" color={colors.investment} />
         </Stat>
         <Stat label="Saldo restante" color={colors.primary}>
           <Money value={summary.remaining} variant="subtitle" />
         </Stat>
-      </View>
+      </StatGrid>
 
-      <Card>
-        <AppText>
-          {summary.usedPct === null
-            ? 'Registre sua receita do mês para acompanhar o uso da renda.'
-            : `Você já utilizou ${formatPercent(Math.round(summary.usedPct))} da sua renda neste mês.`}
-        </AppText>
-        <ProgressBar
-          value={(summary.usedPct ?? 0) / 100}
-          color={(summary.usedPct ?? 0) > 90 ? colors.warning : colors.primary}
-        />
-        <View style={styles.rowBetween}>
-          <AppText variant="small" muted>Investido: {formatPercent(summary.investedPct)}</AppText>
-          <AppText variant="small" muted>Economizado: {formatPercent(summary.savedPct)}</AppText>
-        </View>
-      </Card>
-
-      <Card>
-        <AppText variant="small" muted>Disponível por dia até {formatDateBR(daily.payDate)}</AppText>
-        <Money value={daily.perDay} variant="title" color={colors.primary} />
-        <AppText variant="small">
-          {daily.perDay > 0
-            ? `Você pode gastar aproximadamente ${formatMoney(daily.perDay)} por dia e ainda manter seu planejamento atual.`
-            : 'Suas contas pendentes já consomem o saldo disponível até o próximo salário.'}
-        </AppText>
-        <Line label="Contas pendentes" value={daily.pending} />
-        <Line label="Saldo livre" value={daily.free} />
-        <View style={styles.rowBetween}>
-          <AppText muted>Dias restantes</AppText>
-          <AppText weight="600">{daily.daysLeft}</AppText>
-        </View>
-      </Card>
-
-      <Card>
-        <AppText variant="subtitle">Projeção do mês</AppText>
-        <AppText>
-          Se você não realizar novos gastos, deverá terminar o mês com aproximadamente{' '}
-          <AppText weight="700" color={plan.projection < 0 ? colors.danger : colors.text}>
-            {formatMoney(plan.projection)}
-          </AppText>
-          .
-        </AppText>
-        <Line label="Despesas previstas" value={plan.expectedExpenses} color={colors.expense} />
-        <Line label="Comprometido no mês" value={plan.committed} />
-        <Line label="Gastos fixos pendentes" value={plan.fixed.pending} />
-      </Card>
-
-      {alerts.map((b) => (
-        <Card key={b.id} style={{ backgroundColor: colors.warningSoft, borderColor: colors.warningSoft }}>
-          <AppText>{budgetMessage(b.name, b.pct)}</AppText>
-          <ProgressBar value={b.pct / 100} color={colors.warning} />
-        </Card>
-      ))}
-
-      <Section title="Próximos lançamentos">
-        <Card>
-          {plan.upcoming.length === 0 ? (
-            <EmptyState
-              icon="calendar-outline"
-              title="Nada previsto"
-              message="Gastos fixos, salário e parcelas cadastrados aparecem aqui."
+      {/* Tablet (largura expandida): planejamento à esquerda, lançamentos à direita. */}
+      <Columns>
+        <>
+          <Card>
+            <AppText>
+              {summary.usedPct === null
+                ? 'Registre sua receita do mês para acompanhar o uso da renda.'
+                : `Você já utilizou ${formatPercent(Math.round(summary.usedPct))} da sua renda neste mês.`}
+            </AppText>
+            <ProgressBar
+              value={(summary.usedPct ?? 0) / 100}
+              color={(summary.usedPct ?? 0) > 90 ? colors.warning : colors.primary}
             />
-          ) : (
-            plan.upcoming.map((i) => (
-              <ListRow
-                key={i.key}
-                icon={i.type === 'INCOME' ? 'arrow-down-circle-outline' : i.source === 'INSTALLMENT' ? 'card-outline' : 'repeat-outline'}
-                iconColor={i.type === 'INCOME' ? colors.income : colors.expense}
-                title={i.description}
-                subtitle={`${formatDateBR(i.date)}${i.date < plan.today ? ' · atrasado' : ''}`}
-                right={<Money value={i.amount} color={i.type === 'INCOME' ? colors.income : colors.expense} />}
-                onPress={() => router.push(i.source === 'RECURRING' ? '/recurring' : '/purchases')}
-              />
-            ))
-          )}
-        </Card>
-      </Section>
+            <View style={styles.rowBetween}>
+              <AppText variant="small" muted>Investido: {formatPercent(summary.investedPct)}</AppText>
+              <AppText variant="small" muted>Economizado: {formatPercent(summary.savedPct)}</AppText>
+            </View>
+          </Card>
 
-      <Section title="Últimas movimentações" action="Ver todas" onAction={() => router.navigate('/transactions')}>
-        <Card>
-          {recent.length === 0 ? (
-            <EmptyState icon="add-circle-outline" title="Nada por aqui ainda" message="Toque em + para registrar seu primeiro gasto ou receita." />
-          ) : (
-            recent.map((t) => <TransactionRow key={t.id} tx={t} />)
-          )}
-        </Card>
-      </Section>
+          <Card>
+            <AppText variant="small" muted>Disponível por dia até {formatDateBR(daily.payDate)}</AppText>
+            <Money value={daily.perDay} variant="title" color={colors.primary} />
+            <AppText variant="small">
+              {daily.perDay > 0
+                ? `Você pode gastar aproximadamente ${formatMoney(daily.perDay)} por dia e ainda manter seu planejamento atual.`
+                : 'Suas contas pendentes já consomem o saldo disponível até o próximo salário.'}
+            </AppText>
+            <Line label="Contas pendentes" value={daily.pending} />
+            <Line label="Saldo livre" value={daily.free} />
+            <View style={styles.rowBetween}>
+              <AppText muted>Dias restantes</AppText>
+              <AppText weight="600">{daily.daysLeft}</AppText>
+            </View>
+          </Card>
+
+          <Card>
+            <AppText variant="subtitle">Projeção do mês</AppText>
+            <AppText>
+              Se você não realizar novos gastos, deverá terminar o mês com aproximadamente{' '}
+              <AppText weight="700" color={plan.projection < 0 ? colors.danger : colors.text}>
+                {formatMoney(plan.projection)}
+              </AppText>
+              .
+            </AppText>
+            <Line label="Despesas previstas" value={plan.expectedExpenses} color={colors.expense} />
+            <Line label="Comprometido no mês" value={plan.committed} />
+            <Line label="Gastos fixos pendentes" value={plan.fixed.pending} />
+          </Card>
+
+          {alerts.map((b) => (
+            <Card key={b.id} style={{ backgroundColor: colors.warningSoft, borderColor: colors.warningSoft }}>
+              <AppText>{budgetMessage(b.name, b.pct)}</AppText>
+              <ProgressBar value={b.pct / 100} color={colors.warning} />
+            </Card>
+          ))}
+        </>
+        <>
+          <Section title="Próximos lançamentos">
+            <Card>
+              {plan.upcoming.length === 0 ? (
+                <EmptyState
+                  icon="calendar-outline"
+                  title="Nada previsto"
+                  message="Gastos fixos, salário e parcelas cadastrados aparecem aqui."
+                />
+              ) : (
+                plan.upcoming.map((i) => (
+                  <ListRow
+                    key={i.key}
+                    icon={i.type === 'INCOME' ? 'arrow-down-circle-outline' : i.source === 'INSTALLMENT' ? 'card-outline' : 'repeat-outline'}
+                    iconColor={i.type === 'INCOME' ? colors.income : colors.expense}
+                    title={i.description}
+                    subtitle={`${formatDateBR(i.date)}${i.date < plan.today ? ' · atrasado' : ''}`}
+                    right={<Money value={i.amount} color={i.type === 'INCOME' ? colors.income : colors.expense} />}
+                    onPress={() => router.push(i.source === 'RECURRING' ? '/recurring' : '/purchases')}
+                  />
+                ))
+              )}
+            </Card>
+          </Section>
+
+          <Section title="Últimas movimentações" action="Ver todas" onAction={() => router.navigate('/transactions')}>
+            <Card>
+              {recent.length === 0 ? (
+                <EmptyState icon="add-circle-outline" title="Nada por aqui ainda" message="Toque em + para registrar seu primeiro gasto ou receita." />
+              ) : (
+                recent.map((t) => <TransactionRow key={t.id} tx={t} />)
+              )}
+            </Card>
+          </Section>
+        </>
+      </Columns>
     </Screen>
   );
 }

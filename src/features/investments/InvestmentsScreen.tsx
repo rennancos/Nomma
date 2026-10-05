@@ -1,9 +1,8 @@
 import { router } from 'expo-router';
 import { useMemo } from 'react';
-import { View } from 'react-native';
 import { BarChart, HBarList } from '@/components/Charts';
 import { Button } from '@/components/Controls';
-import { Card, EmptyState, Screen, Section, Stat, styles } from '@/components/Layout';
+import { Card, EmptyState, Screen, Section, Stat, StatGrid } from '@/components/Layout';
 import { AppText, Money } from '@/components/Text';
 import { useFinance } from '@/hooks/useFinance';
 import { useLookups, usePlan } from '@/hooks/usePlan';
@@ -34,13 +33,13 @@ export default function InvestmentsScreen() {
   }, [data, plan.month, categoryName]);
 
   return (
-    <Screen>
-      <View style={styles.grid}>
+    <Screen size="list">
+      <StatGrid>
         <Stat label="Total aportado" color={colors.investment}><Money value={view.total} variant="subtitle" color={colors.investment} /></Stat>
         <Stat label="Investido no mês"><Money value={plan.summary.investments} variant="subtitle" /></Stat>
         <Stat label="% da renda no mês"><AppText variant="subtitle">{formatPercent(plan.summary.investedPct)}</AppText></Stat>
         <Stat label="Saldo em contas de investimento"><Money value={plan.invested} variant="subtitle" /></Stat>
-      </View>
+      </StatGrid>
       <Button title="Novo aporte" icon="add" onPress={() => router.push({ pathname: '/transaction/new', params: { type: 'INVESTMENT' } })} />
 
       {view.aportes.length === 0 ? (

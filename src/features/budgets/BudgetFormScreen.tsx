@@ -30,7 +30,7 @@ export default function BudgetFormScreen() {
   const onSubmit = handleSubmit((v) => run((db) => saveBudget(db, v.categoryId, v.limitAmount), () => router.back()));
 
   return (
-    <Screen>
+    <Screen size="form">
       <Stack.Screen options={{ title: existing ? 'Editar orçamento' : 'Novo orçamento' }} />
       <FormField control={control} name="limitAmount" label="Limite mensal (R$)" keyboardType="decimal-pad" placeholder="300,00" />
       {!existing && <FormChips control={control} name="categoryId" label="Categoria" options={options} />}

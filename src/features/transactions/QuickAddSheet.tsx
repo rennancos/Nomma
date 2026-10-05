@@ -20,7 +20,18 @@ export default function QuickAddSheet() {
   const insets = useSafeAreaInsets();
   return (
     <Pressable style={[styles.overlay, { backgroundColor: colors.overlay }]} onPress={() => router.back()}>
-      <Pressable onPress={() => undefined} style={[styles.sheet, { backgroundColor: colors.surface, paddingBottom: insets.bottom + spacing.lg }]}>
+      <Pressable
+        onPress={() => undefined}
+        style={[
+          styles.sheet,
+          {
+            backgroundColor: colors.surface,
+            paddingBottom: insets.bottom + spacing.lg,
+            paddingLeft: spacing.lg + insets.left,
+            paddingRight: spacing.lg + insets.right,
+          },
+        ]}
+      >
         {ACTIONS.map((a) => (
           <Pressable
             key={a.type}
@@ -39,6 +50,15 @@ export default function QuickAddSheet() {
 
 const styles = StyleSheet.create({
   overlay: { flex: 1, justifyContent: 'flex-end' },
-  sheet: { borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, padding: spacing.lg, gap: spacing.xs },
+  // Em tablets o menu não estica: largura máxima, centralizado.
+  sheet: {
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    padding: spacing.lg,
+    gap: spacing.xs,
+    width: '100%',
+    maxWidth: 560,
+    alignSelf: 'center',
+  },
   action: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg, paddingVertical: spacing.md },
 });

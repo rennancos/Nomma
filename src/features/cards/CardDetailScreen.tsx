@@ -1,8 +1,7 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { View } from 'react-native';
 import { Button, ChipSelect } from '@/components/Controls';
-import { Card, EmptyState, ListRow, Screen, Section, Stat, styles } from '@/components/Layout';
+import { Card, EmptyState, ListRow, Screen, Section, Stat, StatGrid } from '@/components/Layout';
 import { AppText, Money } from '@/components/Text';
 import { useAction, useFinance } from '@/hooks/useFinance';
 import { useTheme } from '@/hooks/useTheme';
@@ -32,7 +31,7 @@ export default function CardDetailScreen() {
     run((db) => payInstallments(db, installments.filter((i) => i.dueDate === dueDate), accountId, today));
 
   return (
-    <Screen>
+    <Screen size="list">
       <Stack.Screen
         options={{
           title: card.name,
@@ -43,13 +42,13 @@ export default function CardDetailScreen() {
           ),
         }}
       />
-      <View style={styles.grid}>
+      <StatGrid>
         <Stat label="Limite total"><Money value={s.limit} variant="subtitle" /></Stat>
         <Stat label="Utilizado" color={colors.expense}><Money value={s.used} variant="subtitle" color={colors.expense} /></Stat>
         <Stat label="Disponível" color={colors.income}><Money value={s.available} variant="subtitle" color={colors.income} /></Stat>
         <Stat label={`Fatura atual · ${formatDateBR(s.currentDue)}`}><Money value={s.currentInvoice} variant="subtitle" /></Stat>
         <Stat label={`Próxima fatura · ${formatDateBR(s.nextDue)}`}><Money value={s.nextInvoice} variant="subtitle" /></Stat>
-      </View>
+      </StatGrid>
 
       <Section title="Faturas em aberto">
         <ChipSelect label="Pagar com" options={liquid.map((a) => ({ value: a.id, label: a.name }))} value={accountId} onChange={setAccountId} />

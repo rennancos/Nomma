@@ -15,7 +15,7 @@ export default function CardsScreen() {
   const today = todayISO();
 
   return (
-    <Screen>
+    <Screen size="list">
       {data.cards.length === 0 && (
         <Card>
           <EmptyState icon="cards" title="Nenhum cartão" message="Cadastre seu cartão para acompanhar limite e faturas." />

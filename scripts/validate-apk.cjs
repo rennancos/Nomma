@@ -31,34 +31,39 @@ function screen() {
   return adb('exec-out', 'cat', '/sdcard/ui.xml');
 }
 
-/** Centro do primeiro nó cujo text ou content-desc é exatamente `label`. */
-function find(xml, label) {
-  const esc = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const re = new RegExp(`(?:text|content-desc)="${esc}"[^>]*?bounds="\\[(\\d+),(\\d+)\\]\\[(\\d+),(\\d+)\\]"`);
-  const m = re.exec(xml);
+/**
+ * Centro do nó cujo text ou content-desc é exatamente `label` (ou um dos rótulos, se for uma lista):
+ * o primeiro ou, com `last`, o último. `last` serve aos modais transparentes (menu do "+"),
+ * desenhados depois da tela que continua por baixo.
+ */
+function find(xml, label, last = false) {
+  const esc = [].concat(label).map((l) => l.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+  const re = new RegExp(`(?:text|content-desc)="(?:${esc})"[^>]*?bounds="\\[(\\d+),(\\d+)\\]\\[(\\d+),(\\d+)\\]"`, 'g');
+  const all = [...xml.matchAll(re)];
+  const m = last ? all.at(-1) : all[0];
   if (!m) return null;
   const [x1, y1, x2, y2] = m.slice(1).map(Number);
   return { x: Math.round((x1 + x2) / 2), y: Math.round((y1 + y2) / 2) };
 }
 
-async function waitFor(label, timeoutMs = 30000) {
+async function waitFor(label, timeoutMs = 30000, last = false) {
   const end = Date.now() + timeoutMs;
   while (Date.now() < end) {
     const xml = screen();
-    const pos = find(xml, label);
+    const pos = find(xml, label, last);
     if (pos) return pos;
     await sleep(1000);
   }
   return null;
 }
 
-async function tap(label) {
-  let pos = await waitFor(label, 8000);
+async function tap(label, last = false) {
+  let pos = await waitFor(label, 8000, last);
   // Rola para baixo até achar (formulários longos).
   for (let i = 0; !pos && i < 5; i++) {
     adb('shell', 'input', 'swipe', '540', '1800', '540', '700', '300');
     await sleep(600);
-    pos = find(screen(), label);
+    pos = find(screen(), label, last);
   }
   if (!pos) throw new Error(`não encontrado na tela: "${label}"`);
   adb('shell', 'input', 'tap', String(pos.x), String(pos.y));
@@ -67,7 +72,8 @@ async function tap(label) {
 
 async function addTransaction(action, amount) {
   await tap('Adicionar movimentação');
-  await tap(action);
+  await tap(action, true); // o card do Início tem um "+" com o mesmo nome por baixo do menu
+  await sleep(500); // animação do menu
   await waitFor('Valor (R$)');
   adb('shell', 'input', 'text', amount); // campo de valor tem foco automático
   await sleep(500);
@@ -85,7 +91,7 @@ async function addTransaction(action, amount) {
   adb('reverse', '--remove-all');
   adb('shell', 'cmd', 'connectivity', 'airplane-mode', 'enable');
   adb('shell', 'svc', 'wifi', 'disable');
-  adb('shell', 'svc', 'data', 'disable');
+  try { adb('shell', 'svc', 'data', 'disable'); } catch { /* emulador sem dados móveis (sem serviço phone) */ }
   await sleep(2000);
   const airplane = adb('shell', 'settings', 'get', 'global', 'airplane_mode_on').trim() === '1';
   const reverses = adb('reverse', '--list').trim();
@@ -94,6 +100,8 @@ async function addTransaction(action, amount) {
   try { adb('uninstall', PKG); } catch { /* não instalado */ }
   adb('install', '-r', apk);
   record('Instalação', adb('shell', 'pm', 'list', 'packages', PKG).includes(PKG));
+  // Lembretes (1.0.7+) pedem permissão de notificação na abertura; concedida aqui para o diálogo não cobrir a tela.
+  try { adb('shell', 'pm', 'grant', PKG, 'android.permission.POST_NOTIFICATIONS'); } catch { /* Android < 13 */ }
 
   adb('logcat', '-c');
   adb('shell', 'monkey', '-p', PKG, '-c', 'android.intent.category.LAUNCHER', '1');
@@ -113,7 +121,7 @@ async function addTransaction(action, amount) {
   // Navega por todas as abas e telas do menu "Mais" (detecta módulo nativo faltando / crash de tela).
   const screens = [
     ['Movimentações', 'Pesquisar'],
-    ['Análises', 'Fechamento do mês'],
+    ['Análises', ['Mensal', 'Monthly']], // traduzida pelo idioma do aparelho (src/i18n)
   ];
   let navOk = true;
   for (const [tab, marker] of screens) {

@@ -7,6 +7,7 @@ import { TYPE_LABELS } from '@/constants/defaults';
 import { spacing } from '@/constants/theme';
 import { useFinance } from '@/hooks/useFinance';
 import { useLookups } from '@/hooks/usePlan';
+import { useContentStyle } from '@/hooks/useResponsive';
 import { useTheme } from '@/hooks/useTheme';
 import { emptyFilter, filterTransactions, type TransactionFilter } from '@/services/finance/filters';
 import type { Transaction, TransactionType } from '@/types';
@@ -20,6 +21,7 @@ export default function HistoryScreen() {
   const { data } = useFinance();
   const { categoryName } = useLookups();
   const { colors } = useTheme();
+  const contentStyle = useContentStyle('list');
   const today = todayISO();
   const [month, setMonth] = useState(monthKeyOf(today));
   const [filter, setFilter] = useState<TransactionFilter>(emptyFilter);
@@ -86,7 +88,7 @@ export default function HistoryScreen() {
   return (
     <SectionList
       style={{ backgroundColor: colors.background }}
-      contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing.xxl * 2 }}
+      contentContainerStyle={[{ paddingTop: spacing.lg, paddingBottom: spacing.xxl * 2 }, contentStyle]}
       keyboardShouldPersistTaps="handled"
       sections={sections}
       keyExtractor={(t) => t.id}

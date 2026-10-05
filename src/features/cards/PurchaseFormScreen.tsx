@@ -44,7 +44,7 @@ export default function PurchaseFormScreen() {
   const onSubmit = handleSubmit((v) => run((db) => createPurchase(db, v, card), () => router.back()));
 
   return (
-    <Screen>
+    <Screen size="form">
       <Stack.Screen options={{ title: 'Novo parcelamento' }} />
       <FormField control={control} name="description" label="Compra" placeholder="Notebook" maxLength={80} />
       <FormField control={control} name="totalAmount" label="Valor total (R$)" keyboardType="decimal-pad" placeholder="0,00" />

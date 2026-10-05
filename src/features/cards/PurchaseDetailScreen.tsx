@@ -23,7 +23,7 @@ export default function PurchaseDetailScreen() {
   const installments = data.installments.filter((i) => i.purchaseId === purchase.id);
 
   return (
-    <Screen>
+    <Screen size="list">
       <Stack.Screen options={{ title: purchase.description }} />
       <Card>
         <Money value={purchase.totalAmount} variant="title" />

@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import type { ReactNode } from 'react';
+import { Children, type ReactNode } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, View, type ColorValue, type ViewProps } from 'react-native';
 import { radius, spacing } from '@/constants/theme';
+import { useContentStyle, useResponsive, type ContentSize } from '@/hooks/useResponsive';
 import { useTheme } from '@/hooks/useTheme';
 import { AppText } from './Text';
 
@@ -32,17 +33,57 @@ export function Icon({ name, size, color }: { name: IconName; size: number; colo
   return <Ionicons name={name as keyof typeof Ionicons.glyphMap} size={size} color={color} />;
 }
 
-export function Screen({ children, scroll = true }: { children: ReactNode; scroll?: boolean }) {
+/**
+ * Tela rolável. `size` limita a largura do conteúdo em telas grandes (centralizado):
+ * 'form' para formulários, 'list' para listas, 'content' (padrão) para painéis.
+ */
+export function Screen({ children, scroll = true, size = 'content' }: {
+  children: ReactNode;
+  scroll?: boolean;
+  size?: ContentSize;
+}) {
   const { colors } = useTheme();
+  const contentStyle = useContentStyle(size);
   if (!scroll) return <View style={[styles.fill, { backgroundColor: colors.background }]}>{children}</View>;
   return (
     <ScrollView
       style={{ backgroundColor: colors.background }}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[styles.content, contentStyle]}
       keyboardShouldPersistTaps="handled"
     >
       {children}
     </ScrollView>
+  );
+}
+
+/**
+ * Grade de cartões de número (Stat): 2 colunas no celular, 4 a partir da largura expandida (≥ 840 dp).
+ * Colunas explícitas: a mesma quantidade por linha em qualquer largura; a última linha incompleta estica.
+ */
+export function StatGrid({ children }: { children: ReactNode }) {
+  const { expanded } = useResponsive();
+  const columns = expanded ? 4 : 2;
+  return (
+    <View style={styles.statGrid}>
+      {Children.toArray(children).map((child, i) => (
+        <View key={i} style={[styles.statCell, { flexBasis: `${100 / columns}%` }]}>{child}</View>
+      ))}
+    </View>
+  );
+}
+
+/**
+ * Duas colunas lado a lado na largura expandida; empilhadas (na ordem) abaixo disso.
+ * Cada filho é uma coluna.
+ */
+export function Columns({ children }: { children: [ReactNode, ReactNode] }) {
+  const { expanded } = useResponsive();
+  if (!expanded) return <>{children}</>;
+  return (
+    <View style={styles.columns}>
+      <View style={styles.column}>{children[0]}</View>
+      <View style={styles.column}>{children[1]}</View>
+    </View>
   );
 }
 
@@ -103,13 +144,53 @@ export function ListRow({ title, subtitle, right, icon, iconColor, onPress }: {
   );
 }
 
-export function Stat({ label, children, color }: { label: string; children: ReactNode; color?: string }) {
-  return (
-    <Card style={styles.stat}>
-      <AppText variant="small" muted>{label}</AppText>
+/**
+ * Cartão de número. Com `onPress`, o cartão inteiro é tocável; com `onAdd`, ganha um botão "+" próprio
+ * (o toque no "+" não chega ao cartão: o Pressable mais interno fica com o gesto).
+ */
+export function Stat({ label, children, color, onPress, onAdd, addLabel }: {
+  label: string;
+  children: ReactNode;
+  color?: string;
+  onPress?: () => void;
+  onAdd?: () => void;
+  /** nome acessível do "+" (ex.: "Adicionar receita") */
+  addLabel?: string;
+}) {
+  const { colors } = useTheme();
+  const card = (
+    <Card style={onPress ? styles.statInner : styles.stat}>
+      <View style={styles.rowBetween}>
+        <AppText variant="small" muted style={styles.fill} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75}>{label}</AppText>
+        {onAdd ? (
+          <Pressable
+            onPress={onAdd}
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel={addLabel ?? `Adicionar em ${label}`}
+            style={({ pressed }) => [styles.statAdd, { backgroundColor: colors.surfaceAlt, opacity: pressed ? 0.5 : 1 }]}
+          >
+            <Ionicons name="add" size={18} color={color ?? colors.text} />
+          </Pressable>
+        ) : (
+          onPress && <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
+        )}
+      </View>
       <View>{children}</View>
       {color && <View style={[styles.statAccent, { backgroundColor: color }]} />}
     </Card>
+  );
+  if (!onPress) return card;
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityHint="Abre a lista do mês"
+      style={({ pressed }) => [styles.stat, { opacity: pressed ? 0.6 : 1 }]}
+    >
+      {card}
+    </Pressable>
   );
 }
 
@@ -134,13 +215,19 @@ export const styles = StyleSheet.create({
   fill: { flex: 1 },
   centered: { alignItems: 'center', justifyContent: 'center' },
   center: { textAlign: 'center' },
-  content: { padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl * 2 },
+  content: { paddingTop: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl * 2 },
   card: { borderRadius: radius.lg, padding: spacing.lg, gap: spacing.sm, borderWidth: StyleSheet.hairlineWidth },
   rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: spacing.sm },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm },
   iconBubble: { width: 36, height: 36, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
-  stat: { flexBasis: '47%', flexGrow: 1, overflow: 'hidden' },
+  // célula da StatGrid: o cartão ocupa a célula inteira (linhas com a mesma altura)
+  stat: { flex: 1, overflow: 'hidden' },
+  statGrid: { flexDirection: 'row', flexWrap: 'wrap', margin: -spacing.md / 2 },
+  statCell: { flexGrow: 1, padding: spacing.md / 2 },
+  columns: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.lg },
+  column: { flex: 1, gap: spacing.lg },
+  statInner: { flex: 1, overflow: 'hidden' },
+  statAdd: { width: 28, height: 28, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
   statAccent: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 3 },
   empty: { alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.xxl, paddingHorizontal: spacing.lg },
 });

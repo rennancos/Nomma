@@ -14,7 +14,7 @@ export default function PurchasesScreen() {
     data.installments.filter((i) => i.purchaseId === purchaseId && i.transactionId !== null).length;
 
   return (
-    <Screen>
+    <Screen size="list">
       <Card>
         {data.purchases.length === 0 ? (
           <EmptyState icon="layers-outline" title="Nenhum parcelamento" message="Ex.: Notebook, R$ 4.000 em 10x." />

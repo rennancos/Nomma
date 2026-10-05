@@ -1,6 +1,6 @@
 import { useSQLiteContext, type SQLiteDatabase } from 'expo-sqlite';
-import { useCallback, useMemo, useState } from 'react';
-import { Alert } from 'react-native';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { Alert, Platform, ToastAndroid } from 'react-native';
 import { useFinanceStore } from '@/stores/financeStore';
 
 /** Dados carregados + banco. Só é usado abaixo do AppShell, que garante os dados carregados. */
@@ -24,8 +24,12 @@ function friendlyError(e: unknown): string {
 export function useAction() {
   const { db, refresh } = useFinance();
   const [busy, setBusy] = useState(false);
+  // `busy` só desabilita o botão no próximo render; a ref barra já o segundo toque (sem gravação duplicada).
+  const running = useRef(false);
   const run = useCallback(
     async (fn: (db: SQLiteDatabase) => Promise<unknown>, onDone?: () => void) => {
+      if (running.current) return;
+      running.current = true;
       setBusy(true);
       try {
         await fn(db);
@@ -34,12 +38,19 @@ export function useAction() {
       } catch (e) {
         Alert.alert('Não foi possível concluir', friendlyError(e));
       } finally {
+        running.current = false;
         setBusy(false);
       }
     },
     [db, refresh],
   );
   return useMemo(() => ({ run, busy }), [run, busy]);
+}
+
+/** Confirmação curta de que algo foi salvo: toast no Android, alerta no iOS (que não tem toast nativo). */
+export function notify(message: string) {
+  if (Platform.OS === 'android') ToastAndroid.show(message, ToastAndroid.SHORT);
+  else Alert.alert(message);
 }
 
 /** Pede confirmação antes de uma ação destrutiva. */

@@ -40,7 +40,7 @@ export default function BackupScreen() {
   };
 
   return (
-    <Screen>
+    <Screen size="form">
       <Card>
         <AppText variant="subtitle">Backup completo (JSON)</AppText>
         <AppText muted>Todas as contas, movimentações, cartões, metas e configurações. Guarde fora do celular (Google Drive, e-mail) para poder restaurar se desinstalar o app ou trocar de aparelho.</AppText>

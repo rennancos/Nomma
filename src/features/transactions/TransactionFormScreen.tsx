@@ -9,7 +9,7 @@ import { Screen, styles } from '@/components/Layout';
 import { AppText } from '@/components/Text';
 import { PAYMENT_LABELS, TYPE_LABELS } from '@/constants/defaults';
 import { spacing } from '@/constants/theme';
-import { confirm, useAction, useFinance } from '@/hooks/useFinance';
+import { confirm, notify, useAction, useFinance } from '@/hooks/useFinance';
 import { useTheme } from '@/hooks/useTheme';
 import { transactionSchema } from '@/schemas';
 import type { PaymentMethod, TransactionType } from '@/types';
@@ -20,6 +20,12 @@ import { deleteTransaction, insertTransaction, updateTransaction } from './repos
 
 const TYPES = Object.keys(TYPE_LABELS) as TransactionType[];
 const PAYMENTS: PaymentMethod[] = ['PIX', 'DEBIT', 'CREDIT', 'CASH', 'BOLETO', 'OTHER'];
+const SAVED: Record<TransactionType, string> = {
+  EXPENSE: 'Gasto registrado',
+  INCOME: 'Receita registrada',
+  INVESTMENT: 'Investimento registrado',
+  TRANSFER: 'Transferência registrada',
+};
 const TITLES: Record<TransactionType, string> = {
   EXPENSE: 'Novo gasto',
   INCOME: 'Nova receita',
@@ -99,7 +105,10 @@ export default function TransactionFormScreen() {
       };
       if (existing) await updateTransaction(db, existing.id, input);
       else await insertTransaction(db, input);
-    }, () => router.back());
+    }, () => {
+      router.back();
+      notify(existing ? 'Alterações salvas' : isCardPurchase ? 'Compra no cartão registrada' : SAVED[v.type]);
+    });
   });
 
   const onDelete = () =>
@@ -109,7 +118,7 @@ export default function TransactionFormScreen() {
     );
 
   return (
-    <Screen>
+    <Screen size="form">
       <Stack.Screen options={{ title: existing ? 'Editar movimentação' : TITLES[type] }} />
       <ChipSelect
         options={TYPES.map((t) => ({ value: t, label: TYPE_LABELS[t] }))}

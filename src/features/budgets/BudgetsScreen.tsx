@@ -15,7 +15,7 @@ export default function BudgetsScreen() {
   const levelColor = { ok: colors.primary, warning: colors.warning, over: colors.danger };
 
   return (
-    <Screen>
+    <Screen size="list">
       {budgets.length === 0 && (
         <Card><EmptyState icon="pie-chart-outline" title="Nenhum orçamento" message="Defina um limite mensal por categoria. Ex.: Delivery R$ 300." /></Card>
       )}

@@ -7,6 +7,9 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "com.rennancos.nomma"
+    },
     "android": {
       "package": "com.rennancos.financas",
       "versionCode": 10,

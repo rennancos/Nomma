@@ -31,7 +31,7 @@ export default function CategoriesScreen() {
   };
 
   return (
-    <Screen>
+    <Screen size="list">
       <ChipSelect options={KINDS} value={kind} onChange={(k) => k && setKind(k)} />
       <View style={[styles.rowBetween, { alignItems: 'flex-start' }]}>
         <View style={styles.fill}>

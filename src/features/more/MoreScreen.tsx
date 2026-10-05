@@ -22,7 +22,7 @@ const GROUPS: { title: string; icon: IconName; href: Href }[][] = [
 
 export default function MoreScreen() {
   return (
-    <Screen>
+    <Screen size="list">
       {GROUPS.map((group, i) => (
         <Card key={i}>
           {group.map((item) => (
