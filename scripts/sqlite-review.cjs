@@ -6,7 +6,7 @@ const assert = require('node:assert/strict');
 const { DatabaseSync } = require('node:sqlite');
 const { randomUUID } = require('node:crypto');
 const ts = require('typescript');
-const root = path.resolve(__dirname, '../..');
+const root = path.resolve(__dirname, '..');
 const cache = new Map();
 function load(file) {
   file = path.resolve(file);

@@ -13,6 +13,14 @@ $gradleDir = Join-Path $envDir 'gradle'
 $drive = 'G:'
 New-Item -ItemType Directory -Force $gradleDir, (Join-Path $envDir 'tmp') | Out-Null
 
+# Um build por vez: dois builds disputam o cache do Gradle e a unidade G: e o segundo quebra no meio.
+# A trava é um arquivo aberto com acesso exclusivo; se o processo morrer, o Windows a libera sozinho.
+try {
+  $lock = [IO.File]::Open((Join-Path $envDir 'build.lock'), 'OpenOrCreate', 'ReadWrite', 'None')
+} catch [IO.IOException] {
+  throw 'Já existe um build do APK em andamento (outra sessão ou terminal). Aguarde terminar e rode de novo; acompanhe com npm run build:log.'
+}
+
 $mapped = @(subst) -match "^$drive\\: => "
 if ($mapped -and ($mapped -notmatch [regex]::Escape($gradleDir))) { throw "A unidade $drive já está em uso: $mapped" }
 $created = -not $mapped
@@ -73,4 +81,5 @@ try {
   }
   Set-Location $root
   if ($created) { subst $drive /D }
+  $lock.Dispose()
 }

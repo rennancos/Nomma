@@ -1,36 +1,39 @@
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { View } from 'react-native';
 import { ProgressBar } from '@/components/Charts';
-import { Card, Columns, EmptyState, ListRow, Screen, Section, Stat, StatGrid, styles } from '@/components/Layout';
+import { Card, Columns, EmptyState, Line, ListRow, Screen, Section, Stat, StatGrid, styles } from '@/components/Layout';
 import { AppText, Money } from '@/components/Text';
 import { useFinance } from '@/hooks/useFinance';
 import { usePlan } from '@/hooks/usePlan';
+import { spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { budgetMessage } from '@/services/finance/planning';
 import { formatDateBR, formatMonthLabel } from '@/utils/date';
 import { formatMoney, formatPercent } from '@/utils/money';
 import { TransactionRow } from '../transactions/TransactionRow';
 
-function Line({ label, value, color }: { label: string; value: number; color?: string }) {
-  return (
-    <View style={styles.rowBetween}>
-      <AppText muted>{label}</AppText>
-      <Money value={value} weight="600" color={color} />
-    </View>
-  );
-}
-
 type EntryType = 'INCOME' | 'EXPENSE' | 'INVESTMENT';
 const openEntries = (type: EntryType, month: string) => router.push({ pathname: '/entries', params: { type, month } });
 const addEntry = (type: EntryType) => router.push({ pathname: '/transaction/new', params: { type } });
+
+function Info({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.rowBetween}>
+      <AppText muted>{label}</AppText>
+      <AppText weight="600">{value}</AppText>
+    </View>
+  );
+}
 
 export default function DashboardScreen() {
   const { data } = useFinance();
   const plan = usePlan();
   const { colors } = useTheme();
   const { summary, daily } = plan;
-  const recent = data.transactions.slice(0, 5);
+  const recent = data.transactions.slice(0, 3);
   const alerts = plan.budgets.filter((b) => b.level !== 'ok');
+  const [details, setDetails] = useState(false);
 
   return (
     <Screen>
@@ -66,6 +69,7 @@ export default function DashboardScreen() {
         >
           <Money value={summary.expenses} variant="subtitle" color={colors.expense} />
         </Stat>
+        {/* Celular: 2 colunas, este estica na linha de baixo. Tablet: os 3 lado a lado. */}
         <Stat
           label="Investimentos"
           color={colors.investment}
@@ -75,58 +79,58 @@ export default function DashboardScreen() {
         >
           <Money value={summary.investments} variant="subtitle" color={colors.investment} />
         </Stat>
-        <Stat label="Saldo restante" color={colors.primary}>
-          <Money value={summary.remaining} variant="subtitle" />
-        </Stat>
       </StatGrid>
 
       {/* Tablet (largura expandida): planejamento à esquerda, lançamentos à direita. */}
       <Columns>
         <>
+          {/* Um card só para o planejamento; o detalhamento fica recolhido para não poluir o Início. */}
           <Card>
-            <AppText>
-              {summary.usedPct === null
-                ? 'Registre sua receita do mês para acompanhar o uso da renda.'
-                : `Você já utilizou ${formatPercent(Math.round(summary.usedPct))} da sua renda neste mês.`}
-            </AppText>
-            <ProgressBar
-              value={(summary.usedPct ?? 0) / 100}
-              color={(summary.usedPct ?? 0) > 90 ? colors.warning : colors.primary}
-            />
-            <View style={styles.rowBetween}>
-              <AppText variant="small" muted>Investido: {formatPercent(summary.investedPct)}</AppText>
-              <AppText variant="small" muted>Economizado: {formatPercent(summary.savedPct)}</AppText>
-            </View>
-          </Card>
-
-          <Card>
-            <AppText variant="small" muted>Disponível por dia até {formatDateBR(daily.payDate)}</AppText>
-            <Money value={daily.perDay} variant="title" color={colors.primary} />
-            <AppText variant="small">
-              {daily.perDay > 0
-                ? `Você pode gastar aproximadamente ${formatMoney(daily.perDay)} por dia e ainda manter seu planejamento atual.`
-                : 'Suas contas pendentes já consomem o saldo disponível até o próximo salário.'}
-            </AppText>
-            <Line label="Contas pendentes" value={daily.pending} />
-            <Line label="Saldo livre" value={daily.free} />
-            <View style={styles.rowBetween}>
-              <AppText muted>Dias restantes</AppText>
-              <AppText weight="600">{daily.daysLeft}</AppText>
-            </View>
-          </Card>
-
-          <Card>
-            <AppText variant="subtitle">Projeção do mês</AppText>
-            <AppText>
-              Se você não realizar novos gastos, deverá terminar o mês com aproximadamente{' '}
-              <AppText weight="700" color={plan.projection < 0 ? colors.danger : colors.text}>
-                {formatMoney(plan.projection)}
+            <AppText variant="subtitle">Este mês</AppText>
+            {daily.perDay > 0 ? (
+              <View>
+                <AppText variant="small" muted>Pode gastar por dia até {formatDateBR(daily.payDate)}</AppText>
+                <Money value={daily.perDay} variant="title" color={colors.primary} />
+              </View>
+            ) : (
+              <AppText color={colors.warning}>Contas pendentes já consomem o saldo até o próximo salário.</AppText>
+            )}
+            <View style={{ gap: spacing.xs }}>
+              <ProgressBar
+                value={(summary.usedPct ?? 0) / 100}
+                color={(summary.usedPct ?? 0) > 90 ? colors.warning : colors.primary}
+              />
+              <AppText variant="small" muted>
+                {summary.usedPct === null
+                  ? 'Registre a receita do mês para acompanhar o uso da renda.'
+                  : `${formatPercent(Math.round(summary.usedPct))} da renda usada`}
               </AppText>
-              .
+            </View>
+            <Line label="Previsão para o fim do mês" value={plan.projection} color={plan.projection < 0 ? colors.danger : undefined} />
+            {details && (
+              <>
+                <Line label="Contas pendentes" value={daily.pending} />
+                <Line label="Saldo livre" value={daily.free} />
+                <Line label="Despesas previstas" value={plan.expectedExpenses} color={colors.expense} />
+                <Line label="Comprometido no mês" value={plan.committed} />
+                <Line label="Gastos fixos pendentes" value={plan.fixed.pending} />
+                <Line label="Saldo restante do mês" value={summary.remaining} />
+                <Info label="Dias até o salário" value={String(daily.daysLeft)} />
+                <Info label="Investido da renda" value={formatPercent(summary.investedPct)} />
+                <Info label="Economizado da renda" value={formatPercent(summary.savedPct)} />
+                <AppText variant="caption" muted>A previsão considera que você não fará novos gastos além dos já previstos.</AppText>
+              </>
+            )}
+            <AppText
+              variant="small"
+              weight="600"
+              color={colors.primary}
+              onPress={() => setDetails((d) => !d)}
+              accessibilityRole="button"
+              style={{ paddingVertical: spacing.xs }}
+            >
+              {details ? 'Ocultar detalhes' : 'Ver detalhes'}
             </AppText>
-            <Line label="Despesas previstas" value={plan.expectedExpenses} color={colors.expense} />
-            <Line label="Comprometido no mês" value={plan.committed} />
-            <Line label="Gastos fixos pendentes" value={plan.fixed.pending} />
           </Card>
 
           {alerts.map((b) => (
@@ -146,7 +150,7 @@ export default function DashboardScreen() {
                   message="Gastos fixos, salário e parcelas cadastrados aparecem aqui."
                 />
               ) : (
-                plan.upcoming.map((i) => (
+                plan.upcoming.slice(0, 3).map((i) => (
                   <ListRow
                     key={i.key}
                     icon={i.type === 'INCOME' ? 'arrow-down-circle-outline' : i.source === 'INSTALLMENT' ? 'card-outline' : 'repeat-outline'}

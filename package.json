@@ -46,10 +46,10 @@
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "lint": "expo lint",
-    "build:apk": "pwsh -NoProfile -ExecutionPolicy Bypass -Command \"New-Item -ItemType Directory -Force builds | Out-Null; & ./scripts/build-apk.ps1 *>&1 | Tee-Object builds/build.log\"",
+    "build:apk": "pwsh -NoProfile -ExecutionPolicy Bypass -Command \"New-Item -ItemType Directory -Force builds | Out-Null; & { \\\"`n===== build $(Get-Date -Format 'dd/MM HH:mm:ss') =====\\\"; & ./scripts/build-apk.ps1 } *>&1 | Tee-Object -Append builds/build.log\"",
     "build:log": "pwsh -NoProfile -Command \"Get-Content builds/build.log -Wait -Tail 30\"",
     "emulator": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/emulator.ps1",
-    "test:sqlite": "node docs/tests/sqlite-review.cjs",
+    "test:sqlite": "node scripts/sqlite-review.cjs",
     "validate:apk": "node scripts/validate-apk.cjs",
     "serve:apk": "node scripts/serve-apk.cjs"
   },

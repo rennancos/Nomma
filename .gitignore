@@ -60,3 +60,6 @@ Desktop.ini
 # Segredos locais do Worker (wrangler dev)
 .dev.vars
 .wrangler/
+
+# Documentação interna: fica só na máquina local
+/docs/

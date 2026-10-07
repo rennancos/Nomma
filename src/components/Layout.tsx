@@ -2,9 +2,19 @@ import { Ionicons } from '@expo/vector-icons';
 import { Children, type ReactNode } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, View, type ColorValue, type ViewProps } from 'react-native';
 import { radius, spacing } from '@/constants/theme';
+import { useKeyboardInset } from '@/hooks/useKeyboardInset';
 import { useContentStyle, useResponsive, type ContentSize } from '@/hooks/useResponsive';
 import { useTheme } from '@/hooks/useTheme';
-import { AppText } from './Text';
+import { AppText, Money } from './Text';
+
+export function Line({ label, value, color }: { label: string; value: number; color?: string }) {
+  return (
+    <View style={styles.rowBetween}>
+      <AppText muted style={{ flex: 1 }}>{label}</AppText>
+      <Money value={value} weight="600" color={color} style={{ maxWidth: '50%', flexShrink: 1 }} />
+    </View>
+  );
+}
 
 // Ícones de funcionalidade da Nomma (image/Gemini_Generated_Image_sgug…jpg, recortados em assets/icons).
 // São de uma cor só: o tintColor recolore conforme o tema e o estado (ativo/inativo).
@@ -44,15 +54,18 @@ export function Screen({ children, scroll = true, size = 'content' }: {
 }) {
   const { colors } = useTheme();
   const contentStyle = useContentStyle(size);
-  if (!scroll) return <View style={[styles.fill, { backgroundColor: colors.background }]}>{children}</View>;
+  // O teclado encolhe a área da tela (o campo focado continua visível) em vez de cobri-la.
+  const { ref, inset } = useKeyboardInset();
   return (
-    <ScrollView
-      style={{ backgroundColor: colors.background }}
-      contentContainerStyle={[styles.content, contentStyle]}
-      keyboardShouldPersistTaps="handled"
-    >
-      {children}
-    </ScrollView>
+    <View ref={ref} style={[styles.fill, { backgroundColor: colors.background, paddingBottom: inset }]}>
+      {scroll ? (
+        <ScrollView contentContainerStyle={[styles.content, contentStyle]} keyboardShouldPersistTaps="handled">
+          {children}
+        </ScrollView>
+      ) : (
+        children
+      )}
+    </View>
   );
 }
 

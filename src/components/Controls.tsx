@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
   dateInput: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   inputLarge: { fontSize: fontSize.hero, fontWeight: '700', paddingVertical: spacing.lg },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  chip: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: radius.pill, borderWidth: 1 },
+  chip: { minHeight: 44, justifyContent: 'center', maxWidth: '100%', paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: radius.pill, borderWidth: 1 },
   toggle: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   month: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
 });
