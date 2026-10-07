@@ -56,3 +56,7 @@ Desktop.ini
 
 # configurações locais do Claude Code
 /.claude
+
+# Segredos locais do Worker (wrangler dev)
+.dev.vars
+.wrangler/

@@ -5,7 +5,7 @@ import { Button } from '@/components/Controls';
 import { FormField } from '@/components/Form';
 import { Screen } from '@/components/Layout';
 import { AppText } from '@/components/Text';
-import { confirm, useAction, useFinance } from '@/hooks/useFinance';
+import { confirm, useAction, useFinance, useLastFound } from '@/hooks/useFinance';
 import { cardSchema } from '@/schemas';
 import { centsToInput } from '@/utils/money';
 import { deleteCard, saveCard } from './repository';
@@ -14,7 +14,7 @@ export default function CardFormScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { data } = useFinance();
   const { run, busy } = useAction();
-  const existing = data.cards.find((c) => c.id === id);
+  const existing = useLastFound(data.cards.find((c) => c.id === id));
 
   const { control, handleSubmit } = useForm({
     resolver: zodResolver(cardSchema),

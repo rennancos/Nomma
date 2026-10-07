@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Button, ChipSelect } from '@/components/Controls';
 import { Card, EmptyState, ListRow, Screen, Section, Stat, StatGrid } from '@/components/Layout';
 import { AppText, Money } from '@/components/Text';
-import { useAction, useFinance } from '@/hooks/useFinance';
+import { useAction, useFinance, useLastFound } from '@/hooks/useFinance';
 import { useTheme } from '@/hooks/useTheme';
 import { cardStatus, groupInvoices } from '@/services/finance/schedule';
 import { formatDateBR, todayISO } from '@/utils/date';
@@ -17,7 +17,7 @@ export default function CardDetailScreen() {
   const { colors } = useTheme();
   const liquid = data.accounts.filter((a) => !a.archived && a.type !== 'INVESTMENT');
   const [accountId, setAccountId] = useState<string | null>(liquid[0]?.id ?? null);
-  const card = data.cards.find((c) => c.id === id);
+  const card = useLastFound(data.cards.find((c) => c.id === id));
   if (!card) return <EmptyState title="Cartão não encontrado" />;
 
   const today = todayISO();

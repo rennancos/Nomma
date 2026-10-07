@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button, ChipSelect } from '@/components/Controls';
 import { Card, EmptyState, ListRow, Screen } from '@/components/Layout';
 import { AppText, Money } from '@/components/Text';
-import { confirm, useAction, useFinance } from '@/hooks/useFinance';
+import { confirm, useAction, useFinance, useLastFound } from '@/hooks/useFinance';
 import { useLookups } from '@/hooks/usePlan';
 import { useTheme } from '@/hooks/useTheme';
 import { formatDateBR, todayISO } from '@/utils/date';
@@ -18,7 +18,7 @@ export default function PurchaseDetailScreen() {
   const { cardName } = useLookups();
   const liquid = data.accounts.filter((a) => !a.archived && a.type !== 'INVESTMENT');
   const [accountId, setAccountId] = useState<string | null>(liquid[0]?.id ?? null);
-  const purchase = data.purchases.find((p) => p.id === id);
+  const purchase = useLastFound(data.purchases.find((p) => p.id === id));
   if (!purchase) return <EmptyState title="Parcelamento não encontrado" />;
   const installments = data.installments.filter((i) => i.purchaseId === purchase.id);
 

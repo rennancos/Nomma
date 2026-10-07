@@ -49,7 +49,7 @@ export default function DashboardScreen() {
 
       <StatGrid>
         <Stat
-          label="Receitas do mês"
+          label="Receitas"
           color={colors.income}
           onPress={() => openEntries('INCOME', plan.month)}
           onAdd={() => addEntry('INCOME')}

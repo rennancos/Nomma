@@ -1,0 +1,18 @@
+// Cloudflare Worker do assistente. Deploy (após login na Cloudflare): npx wrangler deploy -c server/wrangler.jsonc
+// Segredos só via `npx wrangler secret put OPENAI_API_KEY -c server/wrangler.jsonc` — nunca neste arquivo.
+{
+  "name": "nomma-assistant",
+  "main": "assistant.mjs",
+  "compatibility_date": "2026-10-01",
+  "vars": {
+    // ID do projeto Firebase (público, igual ao EXPO_PUBLIC_FIREBASE_PROJECT_ID do app).
+    "FIREBASE_PROJECT_ID": "",
+    "OPENAI_MODEL": ""
+  },
+  "ratelimits": [
+    // 10 perguntas por minuto por usuário (chave = uid validado do Firebase).
+    { "name": "ASSISTANT_LIMITER", "namespace_id": "1001", "simple": { "limit": 10, "period": 60 } }
+  ],
+  // Sem logs de corpo/cabeçalhos: tokens e dados financeiros não vão para a observabilidade.
+  "observability": { "enabled": false }
+}

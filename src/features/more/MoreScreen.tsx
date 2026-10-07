@@ -3,6 +3,10 @@ import { Card, ListRow, Screen, type IconName } from '@/components/Layout';
 
 const GROUPS: { title: string; icon: IconName; href: Href }[][] = [
   [
+    { title: 'Assistente financeiro', icon: 'chatbubbles-outline', href: '/assistant' },
+    { title: 'Conta', icon: 'person-circle-outline', href: '/account' },
+  ],
+  [
     { title: 'Gastos fixos e salário', icon: 'repeat-outline', href: '/recurring' },
     { title: 'Parcelamentos', icon: 'layers-outline', href: '/purchases' },
     { title: 'Cartões de crédito', icon: 'cards', href: '/cards' },

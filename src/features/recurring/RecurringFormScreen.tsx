@@ -4,7 +4,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { Button } from '@/components/Controls';
 import { FormChips, FormDateField, FormField, FormToggle } from '@/components/Form';
 import { Screen } from '@/components/Layout';
-import { confirm, useAction, useFinance } from '@/hooks/useFinance';
+import { confirm, useAction, useFinance, useLastFound } from '@/hooks/useFinance';
 import { recurringSchema } from '@/schemas';
 import { formatDateBR, todayISO } from '@/utils/date';
 import { centsToInput } from '@/utils/money';
@@ -14,7 +14,7 @@ export default function RecurringFormScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { data } = useFinance();
   const { run, busy } = useAction();
-  const existing = data.recurrings.find((r) => r.id === id);
+  const existing = useLastFound(data.recurrings.find((r) => r.id === id));
   const accounts = data.accounts.filter((a) => !a.archived || a.id === existing?.accountId);
 
   const { control, handleSubmit } = useForm({

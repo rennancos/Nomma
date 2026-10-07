@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { Button } from '@/components/Controls';
 import { FormDateField, FormField } from '@/components/Form';
 import { Screen } from '@/components/Layout';
-import { confirm, useAction, useFinance } from '@/hooks/useFinance';
+import { confirm, useAction, useFinance, useLastFound } from '@/hooks/useFinance';
 import { goalSchema } from '@/schemas';
 import { formatDateBR } from '@/utils/date';
 import { centsToInput } from '@/utils/money';
@@ -14,7 +14,7 @@ export default function GoalFormScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { data } = useFinance();
   const { run, busy } = useAction();
-  const existing = data.goals.find((g) => g.id === id);
+  const existing = useLastFound(data.goals.find((g) => g.id === id));
 
   const { control, handleSubmit } = useForm({
     resolver: zodResolver(goalSchema),

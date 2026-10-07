@@ -9,7 +9,7 @@ import { Screen, styles } from '@/components/Layout';
 import { AppText } from '@/components/Text';
 import { PAYMENT_LABELS, TYPE_LABELS } from '@/constants/defaults';
 import { spacing } from '@/constants/theme';
-import { confirm, notify, useAction, useFinance } from '@/hooks/useFinance';
+import { confirm, notify, useAction, useFinance, useLastFound } from '@/hooks/useFinance';
 import { useTheme } from '@/hooks/useTheme';
 import { transactionSchema } from '@/schemas';
 import type { PaymentMethod, TransactionType } from '@/types';
@@ -38,7 +38,7 @@ export default function TransactionFormScreen() {
   const { data } = useFinance();
   const { run, busy } = useAction();
   const { colors } = useTheme();
-  const existing = params.id ? data.transactions.find((t) => t.id === params.id) : undefined;
+  const existing = useLastFound(params.id ? data.transactions.find((t) => t.id === params.id) : undefined);
   const initialType: TransactionType =
     existing?.type ?? (TYPES.includes(params.type as TransactionType) ? (params.type as TransactionType) : 'EXPENSE');
 
@@ -100,7 +100,7 @@ export default function TransactionFormScreen() {
         date: v.date,
         notes: v.notes,
         paymentMethod: v.type === 'EXPENSE' ? v.paymentMethod : null,
-        institution: v.type === 'INVESTMENT' ? v.institution : null,
+        institution: v.type !== 'TRANSFER' ? v.institution : null,
         recurringId: existing?.recurringId ?? null,
       };
       if (existing) await updateTransaction(db, existing.id, input);
@@ -113,8 +113,13 @@ export default function TransactionFormScreen() {
 
   const onDelete = () =>
     existing &&
-    confirm('Excluir movimentação?', 'Essa ação não pode ser desfeita.', () =>
-      run((db) => deleteTransaction(db, existing.id), () => router.back()),
+    confirm(
+      'Excluir movimentação?',
+      // Recorrência automática relança o mês ausente na próxima carga (postDueRecurrences).
+      data.recurrings.find((r) => r.id === existing.recurringId)?.autoPost
+        ? 'Este lançamento é de uma recorrência automática e será lançado de novo. Para parar, edite ou exclua a recorrência em Mais → Gastos fixos e salário.'
+        : 'Essa ação não pode ser desfeita.',
+      () => run((db) => deleteTransaction(db, existing.id), () => router.back()),
     );
 
   return (
@@ -168,8 +173,8 @@ export default function TransactionFormScreen() {
           allowNone={type === 'INVESTMENT'}
         />
       )}
-      {type === 'INVESTMENT' && (
-        <FormField control={control} name="institution" label="Instituição" placeholder="Ex.: Nubank, XP" maxLength={60} />
+      {type !== 'TRANSFER' && !isCardPurchase && (
+        <FormField control={control} name="institution" label="Banco / instituição (opcional)" placeholder="Ex.: Nubank, XP" maxLength={60} />
       )}
 
       <View style={{ gap: spacing.sm }}>

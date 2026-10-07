@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { Button } from '@/components/Controls';
 import { FormChips, FormField } from '@/components/Form';
 import { Screen } from '@/components/Layout';
-import { confirm, useAction, useFinance } from '@/hooks/useFinance';
+import { confirm, useAction, useFinance, useLastFound } from '@/hooks/useFinance';
 import { budgetSchema } from '@/schemas';
 import { centsToInput } from '@/utils/money';
 import { deleteBudget, saveBudget } from './repository';
@@ -13,7 +13,7 @@ export default function BudgetFormScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { data } = useFinance();
   const { run, busy } = useAction();
-  const existing = data.budgets.find((b) => b.id === id);
+  const existing = useLastFound(data.budgets.find((b) => b.id === id));
   const used = new Set(data.budgets.map((b) => b.categoryId));
   const options = data.categories
     .filter((c) => c.kind === 'EXPENSE' && !c.archived && (!used.has(c.id) || c.id === existing?.categoryId))

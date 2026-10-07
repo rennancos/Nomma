@@ -20,6 +20,7 @@
     "expo-sqlite": "~57.0.3",
     "expo-status-bar": "~57.0.1",
     "expo-system-ui": "~57.0.4",
+    "firebase": "^12.19.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-hook-form": "^7.89.0",
@@ -30,13 +31,13 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@types/jest": "29.5.14",
     "@types/react": "~19.2.2",
     "eslint": "^9.39.5",
     "eslint-config-expo": "~57.0.2",
-    "typescript": "~6.0.3",
-    "@types/jest": "29.5.14",
     "jest": "~29.7.0",
-    "jest-expo": "~57.0.5"
+    "jest-expo": "~57.0.5",
+    "typescript": "~6.0.3"
   },
   "scripts": {
     "start": "expo start",
@@ -45,7 +46,8 @@
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "lint": "expo lint",
-    "build:apk": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/build-apk.ps1",
+    "build:apk": "pwsh -NoProfile -ExecutionPolicy Bypass -Command \"New-Item -ItemType Directory -Force builds | Out-Null; & ./scripts/build-apk.ps1 *>&1 | Tee-Object builds/build.log\"",
+    "build:log": "pwsh -NoProfile -Command \"Get-Content builds/build.log -Wait -Tail 30\"",
     "emulator": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/emulator.ps1",
     "test:sqlite": "node docs/tests/sqlite-review.cjs",
     "validate:apk": "node scripts/validate-apk.cjs",

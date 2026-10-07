@@ -3,7 +3,7 @@
     "name": "Nomma",
     "slug": "nomma",
     "scheme": "nomma",
-    "version": "1.0.9",
+    "version": "1.0.12",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -12,10 +12,9 @@
     },
     "android": {
       "package": "com.rennancos.financas",
-      "versionCode": 10,
+      "versionCode": 13,
       "permissions": [],
       "blockedPermissions": [
-        "android.permission.INTERNET",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.RECORD_AUDIO",

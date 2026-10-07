@@ -36,28 +36,36 @@ async function loadAll(db: SQLiteDatabase) {
 export type FinanceData = Awaited<ReturnType<typeof loadAll>>;
 
 interface FinanceState {
+  loadedAt: number | null;
   data: FinanceData | null;
   status: 'loading' | 'ready' | 'error';
   /** Recarrega tudo. Retorna false em caso de erro (os dados anteriores continuam na tela). */
   load: (db: SQLiteDatabase) => Promise<boolean>;
+  /** Troca de perfil (login/logout): descarta os dados e invalida cargas em andamento do perfil anterior. */
+  reset: () => void;
 }
 
 // Só o carregamento mais recente pode publicar dados, evitando que um reload lento sobrescreva um mais novo.
 let latestLoad = 0;
 
 export const useFinanceStore = create<FinanceState>((set, get) => ({
+  loadedAt: null,
   data: null,
   status: 'loading',
   load: async (db) => {
     const id = ++latestLoad;
     try {
       const data = await loadAll(db);
-      if (id === latestLoad) set({ data, status: 'ready' });
+      if (id === latestLoad) set({ data, status: 'ready', loadedAt: Date.now() });
       return true;
     } catch {
       // Sem log do erro: pode conter valores financeiros.
       if (id === latestLoad && !get().data) set({ status: 'error' });
       return false;
     }
+  },
+  reset: () => {
+    latestLoad++;
+    set({ data: null, status: 'loading', loadedAt: null });
   },
 }));

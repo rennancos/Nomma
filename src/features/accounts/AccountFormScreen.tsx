@@ -6,7 +6,7 @@ import { FormChips, FormField } from '@/components/Form';
 import { Screen } from '@/components/Layout';
 import { AppText } from '@/components/Text';
 import { ACCOUNT_TYPE_LABELS } from '@/constants/defaults';
-import { useAction, useFinance } from '@/hooks/useFinance';
+import { useAction, useFinance, useLastFound } from '@/hooks/useFinance';
 import { accountSchema } from '@/schemas';
 import type { AccountType } from '@/types';
 import { centsToInput } from '@/utils/money';
@@ -18,7 +18,7 @@ export default function AccountFormScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { data } = useFinance();
   const { run, busy } = useAction();
-  const existing = data.accounts.find((a) => a.id === id);
+  const existing = useLastFound(data.accounts.find((a) => a.id === id));
 
   const { control, handleSubmit } = useForm({
     resolver: zodResolver(accountSchema),

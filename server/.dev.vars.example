@@ -1,0 +1,3 @@
+# Segredos para testar o Worker localmente (npx wrangler dev -c server/wrangler.jsonc).
+# Copie para server/.dev.vars (ignorado pelo git). Em produção: npx wrangler secret put OPENAI_API_KEY -c server/wrangler.jsonc
+OPENAI_API_KEY=

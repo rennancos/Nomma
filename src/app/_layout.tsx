@@ -9,7 +9,10 @@ import { EmptyState } from '@/components/Layout';
 import { NommaLaunchScreen } from '@/components/NommaLaunchScreen';
 import { brand } from '@/constants/theme';
 import { migrate } from '@/database/migrations';
+import { LOCAL_DB, resolveProfile, userDbName } from '@/database/profiles';
+import { ProfileChoice } from '@/features/account/ProfileChoice';
 import { useTheme } from '@/hooks/useTheme';
+import { useAuthUser } from '@/services/auth/firebase';
 import { syncReminders } from '@/services/reminders';
 import { useFinanceStore } from '@/stores/financeStore';
 
@@ -28,6 +31,8 @@ const TITLES: Record<string, string> = {
   'cards/form': 'Cartão',
   'cards/[id]': 'Cartão',
   investments: 'Investimentos',
+  assistant: 'Assistente financeiro',
+  account: 'Conta',
   'goals/index': 'Metas',
   'goals/form': 'Meta',
   'budgets/index': 'Orçamentos',
@@ -87,16 +92,41 @@ function AppShell() {
   );
 }
 
+type Profile = { uid: string | null; name: string | null; ask?: boolean };
+
 export default function RootLayout() {
+  // Perfil = banco do login atual (ver database/profiles). `undefined`: sessão salva ainda sendo restaurada.
+  const user = useAuthUser();
+  const uid = user === undefined ? undefined : (user?.uid ?? null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  // Resultado de outro login é ignorado: troca de conta nunca abre o banco anterior.
+  const current = profile && profile.uid === uid ? profile : null;
+  useEffect(() => {
+    if (uid === undefined) return;
+    let active = true;
+    useFinanceStore.getState().reset();
+    resolveProfile(uid).then(
+      (r) => active && setProfile('ask' in r ? { uid, name: null, ask: true } : { uid, name: r.name }),
+      () => active && setProfile({ uid, name: uid ? userDbName(uid) : LOCAL_DB }), // começa vazio; o perfil local fica intacto
+    );
+    return () => {
+      active = false;
+    };
+  }, [uid]);
+
   // Pronto = banco aberto, migrations aplicadas e dados (inclusive tema e configurações) carregados — ou erro a mostrar.
-  const ready = useFinanceStore((s) => s.status !== 'loading');
+  const ready = useFinanceStore((s) => s.status !== 'loading') || Boolean(current?.ask);
   const [launchDone, setLaunchDone] = useState(false);
   const finishLaunch = useCallback(() => setLaunchDone(true), []);
   return (
     <View style={{ flex: 1, backgroundColor: brand.deep }}>
-      <SQLiteProvider databaseName="financas.db" onInit={migrate}>
-        <AppShell />
-      </SQLiteProvider>
+      {current?.ask && current.uid ? (
+        <ProfileChoice uid={current.uid} onDone={(name) => setProfile({ uid: current.uid, name })} />
+      ) : current?.name ? (
+        <SQLiteProvider key={current.name} databaseName={current.name} onInit={migrate}>
+          <AppShell />
+        </SQLiteProvider>
+      ) : null}
       {!launchDone && <NommaLaunchScreen ready={ready} onFinish={finishLaunch} />}
     </View>
   );
