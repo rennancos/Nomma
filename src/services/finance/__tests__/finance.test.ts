@@ -192,9 +192,11 @@ describe('recorrências e agenda do mês', () => {
     ...p,
   });
 
-  it('gera a ocorrência no dia do mês, sem retroagir antes do início', () => {
+  it('gera a ocorrência no dia do mês, sem retroagir antes do mês de início', () => {
     expect(recurrenceDate(rec({}), '2026-10')).toBe('2026-10-05');
-    expect(recurrenceDate(rec({ startDate: '2026-09-20' }), '2026-09')).toBeNull();
+    // Cadastrado em 20/09 com dia 5: já existe em setembro (vencido, a pagar), não em agosto.
+    expect(recurrenceDate(rec({ startDate: '2026-09-20' }), '2026-09')).toBe('2026-09-05');
+    expect(recurrenceDate(rec({ startDate: '2026-09-20' }), '2026-08')).toBeNull();
     expect(recurrenceDate(rec({ startDate: '2026-09-20' }), '2026-10')).toBe('2026-10-05');
     expect(recurrenceDate(rec({ active: 0 }), '2026-10')).toBeNull();
     expect(recurrenceDate(rec({ dayOfMonth: 31 }), '2026-02')).toBe('2026-02-28');
@@ -220,6 +222,24 @@ describe('recorrências e agenda do mês', () => {
 
   it('gastos fixos: previstos, pagos e pendentes', () => {
     expect(fixedExpenseStatus(items)).toEqual({ expected: 54300, paid: 11000, pending: 43300 });
+    expect(fixedExpenseStatus(items, 'INCOME')).toEqual({ expected: 530000, paid: 530000, pending: 0 });
+  });
+
+  it('lançamento fixo cadastrado depois do dia já aparece no mês: gasto pendente, salário previsto', () => {
+    const novos = [
+      rec({ id: 'agua', description: 'Água', amount: 9000, dayOfMonth: 5, startDate: '2026-10-07' }),
+      rec({ id: 'sal2', type: 'INCOME', description: 'Salário', amount: 530000, dayOfMonth: 5, startDate: '2026-10-07' }),
+    ];
+    const outubro = monthSchedule('2026-10', novos, new Set(), []);
+    expect(outubro.map((i) => [i.description, i.date, i.paid])).toEqual([
+      ['Água', '2026-10-05', false],
+      ['Salário', '2026-10-05', false],
+    ]);
+    expect(fixedExpenseStatus(outubro)).toEqual({ expected: 9000, paid: 0, pending: 9000 });
+    expect(fixedExpenseStatus(outubro, 'INCOME')).toEqual({ expected: 530000, paid: 0, pending: 530000 });
+    // Salário a receber entra no saldo previsto; o gasto pendente sai.
+    expect(projectMonthEnd(100000, outubro)).toBe(100000 + 530000 - 9000);
+    expect(monthSchedule('2026-09', novos, new Set(), [])).toEqual([]);
   });
 
   it('projeção do mês sem novos gastos', () => {

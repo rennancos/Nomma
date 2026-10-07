@@ -38,6 +38,8 @@ export function usePlan() {
       projection: projectMonthEnd(totals.available, items),
       daily: dailyAllowance(totals.available, [...items, ...nextItems], today, data.settings.payday),
       fixed: fixedExpenseStatus(items),
+      /** Receitas fixas (ex.: salário): previstas entram no saldo previsto até serem recebidas. */
+      fixedIncome: fixedExpenseStatus(items, 'INCOME'),
       budgets,
     };
   }, [data]);

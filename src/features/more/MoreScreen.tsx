@@ -7,7 +7,7 @@ const GROUPS: { title: string; icon: IconName; href: Href }[][] = [
     { title: 'Conta', icon: 'person-circle-outline', href: '/account' },
   ],
   [
-    { title: 'Gastos fixos e salário', icon: 'repeat-outline', href: '/recurring' },
+    { title: 'Lançamentos fixos', icon: 'repeat-outline', href: '/recurring' },
     { title: 'Parcelamentos', icon: 'layers-outline', href: '/purchases' },
     { title: 'Cartões de crédito', icon: 'cards', href: '/cards' },
   ],

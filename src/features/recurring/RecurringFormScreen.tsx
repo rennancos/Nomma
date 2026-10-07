@@ -42,7 +42,7 @@ export default function RecurringFormScreen() {
 
   return (
     <Screen size="form">
-      <Stack.Screen options={{ title: existing ? 'Editar recorrência' : 'Nova recorrência' }} />
+      <Stack.Screen options={{ title: existing ? 'Editar lançamento fixo' : 'Novo lançamento fixo' }} />
       <FormChips
         control={control}
         name="type"
@@ -73,7 +73,7 @@ export default function RecurringFormScreen() {
           title="Excluir"
           variant="danger"
           onPress={() =>
-            confirm('Excluir recorrência?', 'Os lançamentos já feitos continuam no histórico.', () =>
+            confirm('Excluir lançamento fixo?', 'Os lançamentos já feitos continuam no histórico.', () =>
               run((db) => deleteRecurring(db, existing.id), () => router.back()),
             )
           }

@@ -117,7 +117,7 @@ export default function TransactionFormScreen() {
       'Excluir movimentação?',
       // Recorrência automática relança o mês ausente na próxima carga (postDueRecurrences).
       data.recurrings.find((r) => r.id === existing.recurringId)?.autoPost
-        ? 'Este lançamento é de uma recorrência automática e será lançado de novo. Para parar, edite ou exclua a recorrência em Mais → Gastos fixos e salário.'
+        ? 'Este lançamento vem de um lançamento fixo automático e será lançado de novo. Para parar, edite ou exclua o lançamento fixo em Mais → Lançamentos fixos.'
         : 'Essa ação não pode ser desfeita.',
       () => run((db) => deleteTransaction(db, existing.id), () => router.back()),
     );

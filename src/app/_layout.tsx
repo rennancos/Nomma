@@ -22,7 +22,7 @@ SplashScreen.preventAutoHideAsync().catch(() => undefined);
 SplashScreen.setOptions({ fade: false });
 
 const TITLES: Record<string, string> = {
-  'recurring/index': 'Gastos fixos e salário',
+  'recurring/index': 'Lançamentos fixos',
   'recurring/form': 'Recorrência',
   'purchases/index': 'Parcelamentos',
   'purchases/form': 'Parcelamento',

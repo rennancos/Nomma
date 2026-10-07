@@ -35,14 +35,16 @@ export function buildInstallments(
   }));
 }
 
-/** Ocorrência de uma recorrência no mês; null se inativa ou antes do início. */
+/**
+ * Ocorrência de uma recorrência no mês; null se inativa ou antes do mês de início.
+ * O início vale por mês: cadastrado em 07/10 com dia 5, já existe em outubro (vencido, a pagar/receber).
+ */
 export function recurrenceDate(
   rec: Pick<Recurring, 'dayOfMonth' | 'startDate' | 'active'>,
   month: MonthKey,
 ): ISODate | null {
-  if (!rec.active) return null;
-  const date = dateInMonth(month, rec.dayOfMonth);
-  return date >= rec.startDate ? date : null;
+  if (!rec.active || month < monthKeyOf(rec.startDate)) return null;
+  return dateInMonth(month, rec.dayOfMonth);
 }
 
 /** Chave que identifica a ocorrência já lançada de uma recorrência. */
@@ -100,12 +102,12 @@ export function monthSchedule(
   return items.sort((a, b) => a.date.localeCompare(b.date));
 }
 
-/** Gastos fixos (recorrências de despesa) do mês: previstos, pagos e pendentes. */
-export function fixedExpenseStatus(items: ScheduledItem[]) {
+/** Lançamentos fixos do mês de um tipo (gastos ou receitas): previstos, pagos/recebidos e pendentes. */
+export function fixedExpenseStatus(items: ScheduledItem[], type: 'INCOME' | 'EXPENSE' = 'EXPENSE') {
   let expected = 0;
   let paid = 0;
   for (const i of items) {
-    if (i.source !== 'RECURRING' || i.type !== 'EXPENSE') continue;
+    if (i.source !== 'RECURRING' || i.type !== type) continue;
     expected += i.amount;
     if (i.paid) paid += i.amount;
   }

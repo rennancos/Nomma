@@ -10,7 +10,7 @@ import { formatDateBR } from '@/utils/date';
 import { formatMoney } from '@/utils/money';
 import { postOccurrence } from './repository';
 
-/** Gastos fixos e receitas recorrentes: situação do mês + cadastros. */
+/** Lançamentos fixos (gastos e receitas recorrentes): situação do mês + cadastros. */
 export default function RecurringScreen() {
   const { data } = useFinance();
   const plan = usePlan();
@@ -20,11 +20,23 @@ export default function RecurringScreen() {
 
   return (
     <Screen size="list">
-      <StatGrid>
-        <Stat label="Fixos previstos"><Money value={plan.fixed.expected} variant="subtitle" /></Stat>
-        <Stat label="Pagos" color={colors.income}><Money value={plan.fixed.paid} variant="subtitle" color={colors.income} /></Stat>
-        <Stat label="Pendentes" color={colors.warning}><Money value={plan.fixed.pending} variant="subtitle" color={colors.warning} /></Stat>
-      </StatGrid>
+      <Section title="Gastos fixos">
+        <StatGrid>
+          <Stat label="Previstos"><Money value={plan.fixed.expected} variant="subtitle" /></Stat>
+          <Stat label="Pagos" color={colors.income}><Money value={plan.fixed.paid} variant="subtitle" color={colors.income} /></Stat>
+          <Stat label="Pendentes" color={colors.warning}><Money value={plan.fixed.pending} variant="subtitle" color={colors.warning} /></Stat>
+        </StatGrid>
+      </Section>
+      {plan.fixedIncome.expected > 0 && (
+        <Section title="Receitas fixas">
+          <StatGrid>
+            <Stat label="Previstas"><Money value={plan.fixedIncome.expected} variant="subtitle" /></Stat>
+            <Stat label="Recebidas" color={colors.income}><Money value={plan.fixedIncome.paid} variant="subtitle" color={colors.income} /></Stat>
+            {/* Ainda não recebido: entra no saldo previsto (projeção do fim do mês no Início). */}
+            <Stat label="A receber" color={colors.primary}><Money value={plan.fixedIncome.pending} variant="subtitle" color={colors.primary} /></Stat>
+          </StatGrid>
+        </Section>
+      )}
 
       <Section title="Este mês">
         <Card>
@@ -81,7 +93,7 @@ export default function RecurringScreen() {
           )}
         </Card>
       </Section>
-      <Button title="Nova recorrência" icon="add" onPress={() => router.push('/recurring/form')} />
+      <Button title="Novo lançamento fixo" icon="add" onPress={() => router.push('/recurring/form')} />
     </Screen>
   );
 }

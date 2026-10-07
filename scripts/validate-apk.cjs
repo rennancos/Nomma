@@ -129,7 +129,7 @@ async function addTransaction(action, amount) {
     if (!(await waitFor(marker, 15000))) { navOk = false; console.log(`  tela sem conteúdo: ${tab}`); }
   }
   const more = [
-    ['Gastos fixos e salário', 'Nova recorrência'],
+    ['Lançamentos fixos', 'Novo lançamento fixo'],
     ['Parcelamentos', 'Novo parcelamento'],
     ['Cartões de crédito', 'Novo cartão'],
     ['Investimentos', 'Novo aporte'],
