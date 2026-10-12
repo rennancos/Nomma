@@ -1,7 +1,7 @@
 import type { Account, InstallmentView, Recurring, Transaction } from '@/types';
 import { describe, expect, it } from '@jest/globals';
 import { accountBalances, balanceTotals, monthSummary, totalsByCategory } from '../balance';
-import { emptyFilter, filterTransactions } from '../filters';
+import { emptyFilter, filterTransactions, installmentsOfMonth } from '../filters';
 import { budgetMessage, budgetUsage, dailyAllowance, nextPayday, projectMonthEnd } from '../planning';
 import {
   buildInstallments,
@@ -312,5 +312,31 @@ describe('filtro de movimentações', () => {
     expect(filterTransactions(txs, { ...emptyFilter, type: 'INCOME' }, names)).toHaveLength(1);
     expect(filterTransactions(txs, { ...emptyFilter, accountId: 'invest' }, names)).toHaveLength(1);
     expect(filterTransactions(txs, { ...emptyFilter, minAmount: 3000, maxAmount: 60000 }, names)).toHaveLength(2);
+  });
+});
+
+describe('parcelamento como despesa do mês', () => {
+  // Computador de R$ 3.000 em 10x, comprado em 07/10/2026 (carnê, fora do cartão).
+  const parts = buildInstallments(300000, 10, '2026-10-07', null).map((p, i): InstallmentView => ({
+    id: `c${p.number}`, purchaseId: 'pc', number: p.number, amount: p.amount, dueDate: p.dueDate,
+    transactionId: i < 1 ? `tx${p.number}` : null, // a 1ª já foi lançada no vencimento
+    description: 'Computador', installmentCount: 10, creditCardId: null, categoryId: null,
+  }));
+
+  it('cada um dos 10 meses tem R$ 300 de parcela, e nenhum depois', () => {
+    const months = ['2026-11', '2026-12', '2027-01', '2027-02', '2027-03', '2027-04', '2027-05', '2027-06', '2027-07'];
+    for (const m of months) expect(installmentsOfMonth(parts, m).map((i) => i.amount)).toEqual([30000]);
+    expect(installmentsOfMonth(parts, '2027-08')).toEqual([]);
+  });
+
+  it('parcela já lançada não conta de novo (está nas transações)', () => {
+    expect(installmentsOfMonth(parts, '2026-10')).toEqual([]);
+  });
+
+  it('entra em Despesas do mês desde o dia 1, junto com os lançamentos', () => {
+    const planned = installmentsOfMonth(parts, '2026-11').reduce((s, i) => s + i.amount, 0);
+    const s = monthSummary([tx({ type: 'INCOME', amount: 500000, date: '2026-11-05' })], '2026-11', planned);
+    expect(s.expenses).toBe(30000);
+    expect(s.remaining).toBe(470000);
   });
 });

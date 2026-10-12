@@ -2,7 +2,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 import { create } from 'zustand';
 import { listAccounts } from '@/features/accounts/repository';
 import { listBudgets } from '@/features/budgets/repository';
-import { listCards, listInstallments, listPurchases } from '@/features/cards/repository';
+import { listCards, listInstallments, listPurchases, postDueInstallments } from '@/features/cards/repository';
 import { listCategories } from '@/features/categories/repository';
 import { listGoals } from '@/features/goals/repository';
 import { listPostedKeys, listRecurrings, postDueRecurrences } from '@/features/recurring/repository';
@@ -16,6 +16,7 @@ import { listTransactions } from '@/features/transactions/repository';
  */
 async function loadAll(db: SQLiteDatabase) {
   await postDueRecurrences(db);
+  await postDueInstallments(db);
   const [accounts, categories, transactions, recurrings, postedKeys, cards, purchases, installments, goals, budgets, settings] =
     await Promise.all([
       listAccounts(db),

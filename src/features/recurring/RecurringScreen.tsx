@@ -41,7 +41,7 @@ export default function RecurringScreen() {
       <Section title="Este mês">
         <Card>
           {monthItems.length === 0 ? (
-            <EmptyState icon="repeat-outline" title="Nenhuma recorrência neste mês" />
+            <EmptyState icon="repeat-outline" title="Nenhum lançamento fixo neste mês" />
           ) : (
             monthItems.map((i) => {
               const rec = data.recurrings.find((r) => r.id === i.refId);

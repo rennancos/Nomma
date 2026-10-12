@@ -120,6 +120,16 @@ async function check(name, fn) {
     await cards.payInstallments(db, items, 'acc-main', '2026-09-30');
     assert.equal((await txs.listTransactions(db)).length, 1);
   });
+  await check('parcelas vencidas viram despesa no vencimento, uma vez só', async (db) => {
+    // Computador R$ 3.000 em 10x a partir de 07/10/2026; hoje = 20/11/2026 (2 parcelas vencidas).
+    await cards.createPurchase(db, { description: 'Computador', creditCardId: null,
+      categoryId: null, totalAmount: 300000, installmentCount: 10, purchaseDate: '2026-10-07' }, null);
+    await cards.postDueInstallments(db, '2026-11-20');
+    await cards.postDueInstallments(db, '2026-11-20');
+    const posted = (await txs.listTransactions(db)).map(t => [t.date, t.amount, t.type, t.description]).sort();
+    assert.deepEqual(posted, [['2026-10-07', 30000, 'EXPENSE', 'Computador 1/10'], ['2026-11-07', 30000, 'EXPENSE', 'Computador 2/10']]);
+    assert.equal((await cards.listInstallments(db)).filter(i => i.transactionId === null).length, 8);
+  });
   await check('recorrência lançada duas vezes é idempotente', async (db) => {
     await recurring.saveRecurring(db, { type: 'INCOME', description: 'QA', amount: 100,
       categoryId: null, accountId: 'acc-main', dayOfMonth: 5, startDate: '2026-01-01', autoPost: 1, active: 1 });

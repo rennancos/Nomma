@@ -55,9 +55,10 @@ export interface MonthSummary {
 }
 
 /** Resumo do mês. Transferências são neutras: não entram em receita nem despesa. */
-export function monthSummary(txs: SummaryTx[], month: MonthKey): MonthSummary {
+export function monthSummary(txs: SummaryTx[], month: MonthKey, plannedExpenses = 0): MonthSummary {
   let income = 0;
-  let expenses = 0;
+  // Parcelas do mês ainda não lançadas contam como despesa desde o dia 1 (ver installmentsOfMonth).
+  let expenses = plannedExpenses;
   let investments = 0;
   for (const t of txs) {
     if (monthKeyOf(t.date) !== month) continue;

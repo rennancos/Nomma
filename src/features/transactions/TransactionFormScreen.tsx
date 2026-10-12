@@ -116,9 +116,12 @@ export default function TransactionFormScreen() {
     confirm(
       'Excluir movimentação?',
       // Recorrência automática relança o mês ausente na próxima carga (postDueRecurrences).
+      // Parcela vencida também volta (postDueInstallments).
       data.recurrings.find((r) => r.id === existing.recurringId)?.autoPost
         ? 'Este lançamento vem de um lançamento fixo automático e será lançado de novo. Para parar, edite ou exclua o lançamento fixo em Mais → Lançamentos fixos.'
-        : 'Essa ação não pode ser desfeita.',
+        : data.installments.some((i) => i.transactionId === existing.id)
+          ? 'Este lançamento é uma parcela e será lançado de novo. Para parar, exclua o parcelamento em Mais → Parcelamentos.'
+          : 'Essa ação não pode ser desfeita.',
       () => run((db) => deleteTransaction(db, existing.id), () => router.back()),
     );
 

@@ -1,4 +1,4 @@
-import type { Transaction, TransactionType } from '@/types';
+import type { InstallmentView, Transaction, TransactionType } from '@/types';
 import { monthKeyOf } from '@/utils/date';
 
 export interface TransactionFilter {
@@ -38,6 +38,13 @@ export function filterTransactions<T extends Transaction>(
       (!q || normalize(`${t.description} ${t.notes ?? ''} ${categoryName(t.categoryId)}`).includes(q)),
   );
 }
+
+/**
+ * Parcelas do mês ainda não lançadas: entram em Despesas desde o dia 1 até o vencimento,
+ * quando viram lançamento (postDueInstallments). As já lançadas estão nas transações; não somar de novo.
+ */
+export const installmentsOfMonth = <T extends Pick<InstallmentView, 'dueDate' | 'transactionId'>>(installments: T[], month: string): T[] =>
+  installments.filter((i) => i.transactionId === null && monthKeyOf(i.dueDate) === month);
 
 /**
  * Lançamentos de um tipo no mês ('yyyy-MM'), do mais recente ao mais antigo.

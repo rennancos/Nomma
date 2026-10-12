@@ -1,6 +1,7 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { newId, nowISO } from '@/database/id';
 import { buildInstallments } from '@/services/finance/schedule';
+import { todayISO } from '@/utils/date';
 import type { CreditCard, InstallmentView, Purchase } from '@/types';
 
 export type CardInput = Omit<CreditCard, 'id' | 'archived'>;
@@ -102,4 +103,22 @@ export async function payInstallments(
       await txn.runAsync('UPDATE installments SET transaction_id = ? WHERE id = ?', txId, i.id);
     }
   });
+}
+
+/**
+ * Parcelas vencidas viram despesa sozinhas, com a data do vencimento, como os lançamentos fixos automáticos.
+ * Conta: a primeira conta comum ativa (o mesmo padrão das telas de pagamento); dá para trocar editando o lançamento.
+ * Idempotente: payInstallments ignora parcela já paga. Excluir o lançamento devolve a parcela a pendente,
+ * e ela é lançada de novo na próxima carga.
+ */
+export async function postDueInstallments(db: SQLiteDatabase, today = todayISO()): Promise<void> {
+  const due = (await listInstallments(db)).filter((i) => i.transactionId === null && i.dueDate <= today);
+  if (due.length === 0) return;
+  const account = await db.getFirstAsync<{ id: string }>(
+    `SELECT id FROM accounts WHERE archived = 0 AND type <> 'INVESTMENT' ORDER BY created_at LIMIT 1`,
+  );
+  if (!account) return;
+  for (const date of new Set(due.map((i) => i.dueDate))) {
+    await payInstallments(db, due.filter((i) => i.dueDate === date), account.id, date);
+  }
 }

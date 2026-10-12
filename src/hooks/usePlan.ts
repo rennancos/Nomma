@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { accountBalances, balanceTotals, monthSummary, totalsByCategory } from '@/services/finance/balance';
 import { budgetUsage, dailyAllowance, pendingTotal, projectMonthEnd } from '@/services/finance/planning';
+import { installmentsOfMonth } from '@/services/finance/filters';
 import { fixedExpenseStatus, monthSchedule } from '@/services/finance/schedule';
 import { addMonthsToKey, monthKeyOf, todayISO } from '@/utils/date';
 import { useFinance } from './useFinance';
@@ -13,7 +14,8 @@ export function usePlan() {
     const month = monthKeyOf(today);
     const balances = accountBalances(data.accounts, data.transactions);
     const totals = balanceTotals(data.accounts, balances);
-    const summary = monthSummary(data.transactions, month);
+    const plannedInstallments = installmentsOfMonth(data.installments, month).reduce((s, i) => s + i.amount, 0);
+    const summary = monthSummary(data.transactions, month, plannedInstallments);
     const items = monthSchedule(month, data.recurrings, data.postedKeys, data.installments);
     const nextItems = monthSchedule(addMonthsToKey(month, 1), data.recurrings, data.postedKeys, data.installments);
     const expectedExpenses = pendingTotal(items, 'EXPENSE');
@@ -34,7 +36,8 @@ export function usePlan() {
       /** Recorrências e parcelas ainda não pagas, deste mês e do próximo. */
       upcoming: [...items, ...nextItems].filter((i) => !i.paid),
       expectedExpenses,
-      committed: summary.expenses + expectedExpenses,
+      // As parcelas pendentes já estão em summary.expenses; não contar duas vezes.
+      committed: summary.expenses + expectedExpenses - plannedInstallments,
       projection: projectMonthEnd(totals.available, items),
       daily: dailyAllowance(totals.available, [...items, ...nextItems], today, data.settings.payday),
       fixed: fixedExpenseStatus(items),

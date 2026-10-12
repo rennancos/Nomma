@@ -2,14 +2,14 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { Button, MonthSwitcher } from '@/components/Controls';
-import { Card, EmptyState, Screen, styles } from '@/components/Layout';
+import { Card, EmptyState, ListRow, Screen, styles } from '@/components/Layout';
 import { AppText, Money } from '@/components/Text';
 import { typeColor } from '@/constants/theme';
 import { useFinance } from '@/hooks/useFinance';
 import { useTheme } from '@/hooks/useTheme';
-import { entriesOfMonth } from '@/services/finance/filters';
+import { entriesOfMonth, installmentsOfMonth } from '@/services/finance/filters';
 import type { TransactionType } from '@/types';
-import { monthKeyOf, todayISO } from '@/utils/date';
+import { formatDateBR, monthKeyOf, todayISO } from '@/utils/date';
 import { TransactionRow } from './TransactionRow';
 
 type EntryType = Exclude<TransactionType, 'TRANSFER'>;
@@ -41,7 +41,13 @@ export default function MonthEntriesScreen() {
 
   // Lê da fotografia do banco: depois de salvar, o store recarrega e a lista e o total se atualizam sozinhos.
   const entries = useMemo(() => entriesOfMonth(data.transactions, type, month), [data.transactions, type, month]);
-  const total = entries.reduce((s, t) => s + t.amount, 0);
+  // Despesas: parcelas do mês ainda não lançadas entram desde o dia 1 (mesma regra do Início).
+  const planned = useMemo(
+    () => (type === 'EXPENSE' ? installmentsOfMonth(data.installments, month) : []),
+    [data.installments, type, month],
+  );
+  const count = entries.length + planned.length;
+  const total = entries.reduce((s, t) => s + t.amount, 0) + planned.reduce((s, i) => s + i.amount, 0);
   const add = () => router.push({ pathname: '/transaction/new', params: { type } });
 
   return (
@@ -52,19 +58,32 @@ export default function MonthEntriesScreen() {
         <View style={styles.rowBetween}>
           <AppText muted>{copy.total}</AppText>
           <AppText variant="small" muted>
-            {entries.length} {entries.length === 1 ? 'lançamento' : 'lançamentos'}
+            {count} {count === 1 ? 'lançamento' : 'lançamentos'}
           </AppText>
         </View>
         <Money value={total} variant="title" color={color} />
       </Card>
-      {entries.length > 0 && <Button title={copy.add} icon="add" onPress={add} />}
+      {count > 0 && <Button title={copy.add} icon="add" onPress={add} />}
       <Card>
-        {entries.length === 0 ? (
+        {count === 0 ? (
           <EmptyState icon="calendar-outline" title={copy.empty} message="Registre o primeiro lançamento deste tipo.">
             <Button title={copy.add} icon="add" onPress={add} />
           </EmptyState>
         ) : (
-          entries.map((t) => <TransactionRow key={t.id} tx={t} showDate />)
+          <>
+            {planned.map((i) => (
+              <ListRow
+                key={i.id}
+                icon="card-outline"
+                iconColor={color}
+                title={`${i.description} ${i.number}/${i.installmentCount}`}
+                subtitle={`Parcela prevista · vence em ${formatDateBR(i.dueDate)}`}
+                right={<Money value={-i.amount} weight="600" color={color} />}
+                onPress={() => router.push({ pathname: '/purchases/[id]', params: { id: i.purchaseId } })}
+              />
+            ))}
+            {entries.map((t) => <TransactionRow key={t.id} tx={t} showDate />)}
+          </>
         )}
       </Card>
     </Screen>
