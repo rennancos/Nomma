@@ -12,6 +12,10 @@ export default function TabsLayout() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
+        // Rótulo sempre embaixo do ícone (deitado, o padrão é ao lado e o botão "+" sai da barra) e em tamanho fixo:
+        // cada aba tem ~80dp, não há espaço para a fonte grande do sistema.
+        tabBarLabelPosition: 'below-icon',
+        tabBarAllowFontScaling: false,
         headerStyle: { backgroundColor: colors.background },
         headerTintColor: colors.text,
         headerShadowVisible: false,
@@ -30,6 +34,7 @@ export default function TabsLayout() {
         name="transactions"
         options={{
           title: 'Movimentações',
+          tabBarLabel: 'Movimentos', // "Movimentações" não cabe na largura da aba e era cortado
           tabBarIcon: ({ color, size }) => <Icon name="transactions" color={color} size={size} />,
         }}
       />

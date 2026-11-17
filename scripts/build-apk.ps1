@@ -74,6 +74,9 @@ try {
   $restoreVersion = $null # build concluído: a versão nova fica
   Write-Host "APK gerado: $apk ($([math]::Round((Get-Item $apk).Length / 1MB, 1)) MB)"
   # Emulador aberto? Já instala e abre a versão nova para testar.
+  # Volta à raiz antes: o servidor do adb herda a pasta atual e, iniciado de dentro de android/,
+  # trava a pasta e o próximo prebuild falha com EBUSY.
+  Set-Location $root
   & (Join-Path $PSScriptRoot 'emulator.ps1') -IfRunning
 } finally {
   # Build falhou: volta só versão e versionCode, para a próxima tentativa reusar o número.

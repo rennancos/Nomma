@@ -11,6 +11,7 @@ export async function loadSettings(db: SQLiteDatabase): Promise<Settings> {
   const payday = Number(map.get('payday'));
   return {
     userName: map.get('userName') ?? '',
+    onboardingCompleted: map.get('onboardingCompleted') === '1',
     theme: theme && THEMES.includes(theme) ? theme : 'system',
     payday: payday >= 1 && payday <= 31 ? payday : DEFAULT_PAYDAY,
     dailyReminder: map.get('dailyReminder') !== '0', // ligado por padrão

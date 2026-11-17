@@ -26,16 +26,20 @@ export function detectDeviceLocale(): SupportedLocale {
   }
 }
 
-// O idioma do aparelho não muda com o app aberto: detecta uma vez.
-let deviceLocale: SupportedLocale | undefined;
+/**
+ * Idioma da interface. Fixo em português porque só parte do app passa por `t`: seguir o idioma do aparelho
+ * deixava Análises em inglês e o resto em português num celular em inglês.
+ * Quando todas as telas usarem `t`, trocar por `detectDeviceLocale()`.
+ */
+export const APP_LOCALE: SupportedLocale = 'pt-BR';
 
 /**
- * Texto traduzido. `vars` preenche marcadores como `{pct}`. Sem `locale`, usa o idioma do aparelho.
+ * Texto traduzido. `vars` preenche marcadores como `{pct}`. Sem `locale`, usa APP_LOCALE.
  * Também aceita `t(chave, locale)`.
  */
 export function t(key: TranslationKey, vars?: Record<string, string | number> | SupportedLocale, locale?: SupportedLocale): string {
   if (typeof vars === 'string') return t(key, undefined, vars);
-  const lang = locale ?? (deviceLocale ??= detectDeviceLocale());
+  const lang = locale ?? APP_LOCALE;
   const [section, entry] = key.split('.') as [keyof Messages, string];
   const pick = (m: Messages) => (m[section] as Record<string, string>)[entry];
   const text = pick(translations[lang]) ?? pick(en) ?? key;

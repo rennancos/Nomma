@@ -112,6 +112,8 @@ export interface Budget {
 export type ThemePreference = 'system' | 'light' | 'dark';
 
 export interface Settings {
+  /** Guia concluído ou dispensado neste perfil. */
+  onboardingCompleted?: boolean;
   userName: string;
   theme: ThemePreference;
   payday: number;

@@ -136,6 +136,8 @@ function AxisLabels({ labels, selected }: { labels: string[]; selected?: number 
           weight={selected === i ? '600' : undefined}
           style={styles.label}
           numberOfLines={1}
+          // Com fonte grande do sistema, "ago/26" não cabe na coluna e vira "ago/…": o eixo fica em tamanho fixo.
+          maxFontSizeMultiplier={1}
         >
           {n <= 6 || (n - 1 - i) % 2 === 0 || selected === i ? l : ''}
         </AppText>

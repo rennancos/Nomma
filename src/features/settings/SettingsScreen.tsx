@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import Constants from 'expo-constants';
+import { router } from 'expo-router';
 import { useForm } from 'react-hook-form';
 import { Alert } from 'react-native';
 import { Button } from '@/components/Controls';
@@ -47,6 +48,11 @@ export default function SettingsScreen() {
 
   return (
     <Screen size="form">
+      <Card>
+        <AppText variant="subtitle">Primeiros passos no Nomma</AppText>
+        <AppText muted>Veja como ajustar seu saldo, registrar gastos e acompanhar seu dinheiro.</AppText>
+        <Button title="Abrir guia" variant="secondary" onPress={() => router.push('/getting-started')} />
+      </Card>
       <FormField control={control} name="userName" label="Seu nome" placeholder="Opcional" maxLength={40} />
       <FormField control={control} name="payday" label="Dia do salário" keyboardType="number-pad" maxLength={2} />
       <AppText variant="small" muted>Usado para calcular quanto você pode gastar por dia até o próximo salário.</AppText>

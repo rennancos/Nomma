@@ -11,6 +11,7 @@ import { brand } from '@/constants/theme';
 import { migrate } from '@/database/migrations';
 import { LOCAL_DB, resolveProfile, userDbName } from '@/database/profiles';
 import { ProfileChoice } from '@/features/account/ProfileChoice';
+import { FirstUseGuide } from '@/features/onboarding/FirstUseGuide';
 import { useTheme } from '@/hooks/useTheme';
 import { useAuthUser } from '@/services/auth/firebase';
 import { syncReminders } from '@/services/reminders';
@@ -42,6 +43,7 @@ const TITLES: Record<string, string> = {
   categories: 'Categorias',
   backup: 'Backup',
   settings: 'Configurações',
+  'getting-started': 'Guia de primeiros passos',
   'transaction/new': 'Nova movimentação',
   'transaction/[id]': 'Movimentação',
   entries: 'Lançamentos do mês',
@@ -51,6 +53,7 @@ function AppShell() {
   const db = useSQLiteContext();
   const status = useFinanceStore((s) => s.status);
   const load = useFinanceStore((s) => s.load);
+  const onboardingCompleted = useFinanceStore((s) => s.data?.settings.onboardingCompleted);
   const { colors, scheme } = useTheme();
 
   useEffect(() => {
@@ -72,6 +75,8 @@ function AppShell() {
       </View>
     );
   }
+
+  if (!onboardingCompleted) return <FirstUseGuide />;
 
   return (
     <>

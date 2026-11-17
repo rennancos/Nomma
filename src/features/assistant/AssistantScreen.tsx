@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { Button, ChipSelect, MonthSwitcher, TextField, Toggle } from '@/components/Controls';
 import { Card, EmptyState, Icon, Line, Screen, Section, Stat, StatGrid } from '@/components/Layout';
 import { HBarList } from '@/components/Charts';
@@ -160,9 +160,7 @@ export default function AssistantScreen() {
         </StatGrid>
         <Conversation key={JSON.stringify(filters) + loadedAt} report={report} />
         <Section title="Distribuição das despesas">
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingBottom: spacing.xs }}>
-            <ChipSelect options={DIMENSIONS} value={dimension} onChange={d => { if (d) { setDimension(d); setGroupKey(null); setCount(20); setEntriesOpen(false); } }} />
-          </ScrollView>
+          <ChipSelect options={DIMENSIONS} value={dimension} onChange={d => { if (d) { setDimension(d); setGroupKey(null); setCount(20); setEntriesOpen(false); } }} />
           <Card>
             {groups.length ? <HBarList items={groups} selected={selected ? groups.indexOf(selected) : null} onSelect={i => { setGroupKey(i == null ? null : groups[i]!.key); setCount(20); setEntriesOpen(i != null); }} /> : <EmptyState title="Nenhuma despesa neste recorte" />}
             <AppText variant="caption" muted>Toque em uma barra para filtrar os lançamentos abaixo. Descrições não identificam estabelecimentos com certeza.</AppText>

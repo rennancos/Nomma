@@ -38,6 +38,23 @@ export async function seedDemoData(db: SQLiteDatabase, today = todayISO()): Prom
     await rec('rec-internet', 'EXPENSE', 'Internet', 11000, cat('EXPENSE', 'Internet'), 5, 0);
     await rec('rec-emprestimo', 'EXPENSE', 'Empréstimo', 31300, cat('EXPENSE', 'Empréstimos'), 5, 0);
 
+    // Histórico (5 a 2 meses atrás) para os gráficos de Análises: um mês no vermelho (viagem) e um resgate.
+    const history: [extra: string, category: string, amount: number, invest: number][] = [
+      ['Plano de saúde', cat('EXPENSE', 'Saúde'), 95000, 30000],
+      ['Viagem de férias', cat('EXPENSE', 'Viagens'), 520000, 0],
+      ['Show', cat('EXPENSE', 'Lazer'), 22000, 60000],
+      ['Conserto do carro', cat('EXPENSE', 'Transporte'), 140000, 40000],
+    ];
+    for (const [i, [extra, category, amount, invest]] of history.entries()) {
+      const m = addMonthsToKey(month, i - 5);
+      await tx(`h${i}-sal`, 'INCOME', 'Salário', 530000, cat('INCOME', 'Salário'), `${m}-05`);
+      await tx(`h${i}-merc`, 'EXPENSE', 'Mercado', 61000 + i * 3000, cat('EXPENSE', 'Mercado'), `${m}-08`);
+      await tx(`h${i}-extra`, 'EXPENSE', extra, amount, category, `${m}-12`);
+      if (invest) await tx(`h${i}-inv`, 'INVESTMENT', 'Aporte Tesouro', invest, cat('INVESTMENT', 'Tesouro Direto'), `${m}-06`, 'acc-main', 'acc-invest');
+    }
+    await tx('h-freela', 'INCOME', 'Freelance', 80000, cat('INCOME', 'Freelance'), `${addMonthsToKey(month, -3)}-20`);
+    await tx('h-resgate', 'TRANSFER', 'Resgate', 25000, null, `${addMonthsToKey(month, -2)}-18`, 'acc-invest', 'acc-main');
+
     // Mês anterior, para comparação e gráficos.
     const prev = addMonthsToKey(month, -1);
     await tx('p-sal', 'INCOME', 'Salário', 530000, cat('INCOME', 'Salário'), `${prev}-05`, 'acc-main', null, DEMO + 'rec-salario');
@@ -59,7 +76,7 @@ export async function seedDemoData(db: SQLiteDatabase, today = todayISO()): Prom
 
     await txn.runAsync(
       `INSERT INTO credit_cards (id, name, bank, limit_amount, closing_day, due_day, created_at, updated_at)
-       VALUES (?, 'Nubank', 'Nubank', 500000, 25, 2, ?, ?)`,
+       VALUES (?, 'Nubank', 'Nubank', 800000, 25, 2, ?, ?)`,
       DEMO + 'card', now, now,
     );
     const card = { closingDay: 25, dueDay: 2 };

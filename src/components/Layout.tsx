@@ -149,7 +149,8 @@ export function ListRow({ title, subtitle, right, icon, iconColor, onPress }: {
         </View>
       )}
       <View style={styles.fill}>
-        <AppText numberOfLines={1}>{title}</AppText>
+        {/* Duas linhas: descrições longas (extrato importado, fonte grande) não ficam cortadas no meio. */}
+        <AppText numberOfLines={2}>{title}</AppText>
         {subtitle ? <AppText variant="small" muted numberOfLines={1}>{subtitle}</AppText> : null}
       </View>
       {right}

@@ -82,6 +82,20 @@ export async function pickBackupFile(): Promise<string | null> {
   return picked.canceled ? null : picked.result.text();
 }
 
+/**
+ * Extrato (OFX ou CSV) escolhido pelo usuário; null se cancelar. Bancos brasileiros costumam exportar em Windows-1252:
+ * se a leitura como UTF-8 produzir caracteres inválidos, relê os bytes como Latin-1 para manter os acentos.
+ */
+export async function pickStatementFile(): Promise<string | null> {
+  const picked = await File.pickFileAsync();
+  if (picked.canceled) return null;
+  const text = await picked.result.text();
+  if (!text.includes('�')) return text;
+  let latin1 = '';
+  for (const byte of await picked.result.bytes()) latin1 += String.fromCharCode(byte);
+  return latin1;
+}
+
 const csvCell =(value: string, text: boolean) => {
   // Aspas CSV não impedem execução de fórmulas por planilhas.
   const v = text && /^[\s]*[=+\-@\t\r\n]/.test(value) ? `'${value}` : value;

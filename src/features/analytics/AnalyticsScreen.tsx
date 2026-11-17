@@ -8,7 +8,7 @@ import { spacing } from '@/constants/theme';
 import { useFinance } from '@/hooks/useFinance';
 import { useLookups } from '@/hooks/usePlan';
 import { useTheme } from '@/hooks/useTheme';
-import { detectDeviceLocale, t, type TranslationKey } from '@/i18n';
+import { APP_LOCALE, t, type TranslationKey } from '@/i18n';
 import {
   categoryBreakdown,
   hasData,
@@ -27,7 +27,7 @@ import { formatMoney, formatPercent } from '@/utils/money';
 // Análises (docs/ANALYTICS.md): cada gráfico responde uma pergunta. Cálculos em services/finance/analytics.ts;
 // aqui só a montagem da tela. Tocar num mês em qualquer gráfico seleciona o mesmo mês em todos.
 
-const LOCALE = detectDeviceLocale();
+const LOCALE = APP_LOCALE;
 const PERIOD_LABEL: Record<PeriodKey, TranslationKey> = {
   month: 'analytics.periodMonth',
   '3m': 'analytics.period3m',
@@ -246,28 +246,24 @@ export default function AnalyticsScreen() {
           <Section title={t('analytics.savingsTitle')}>
             <Card>
               <Question text={t('analytics.savingsQuestion')} />
-              {summary.income === 0 ? (
-                <AppText muted>{t('analytics.noIncome')}</AppText>
-              ) : (
-                <>
-                  <TrendChart
-                    labels={labels}
-                    line={stats.map((s) => s.savingsRate)}
-                    lineColor={colors.primary}
-                    selected={many ? index : null}
-                    onSelect={setPicked}
-                  />
-                  <Detail
-                    title={longLabel(month.month)}
-                    rows={[
-                      [t('analytics.saved'), formatMoney(month.savings)],
-                      [t('analytics.savingsRate'), pct(month.savingsRate)],
-                      [t('analytics.invested'), formatMoney(month.investments)],
-                      [t('analytics.freeBalance'), formatMoney(month.free)],
-                    ]}
-                  />
-                </>
-              )}
+              {/* Barras em reais (receitas − despesas): a taxa em % some sem receita e distorce a escala quando negativa. */}
+              <BarChart
+                labels={labels}
+                series={[{ label: t('analytics.saved'), color: colors.primary }]}
+                values={stats.map((s) => [s.savings])}
+                selected={many ? index : null}
+                onSelect={setPicked}
+              />
+              <Detail
+                title={longLabel(month.month)}
+                rows={[
+                  [t('analytics.saved'), formatMoney(month.savings)],
+                  [t('analytics.savingsRate'), pct(month.savingsRate)],
+                  [t('analytics.invested'), formatMoney(month.investments)],
+                  [t('analytics.freeBalance'), formatMoney(month.free)],
+                ]}
+              />
+              <AppText variant="caption" muted>{t('analytics.savingsNote')}</AppText>
             </Card>
           </Section>
         </>

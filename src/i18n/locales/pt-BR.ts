@@ -43,10 +43,10 @@ export const ptBR: typeof en = {
     contributionsNote: 'Barras: aporte do mês. Linha: total aportado. Rentabilidade não incluída.',
     noInvestments: 'Nenhum aporte ainda.',
     savingsTitle: 'Economia mensal',
-    savingsQuestion: 'Estou economizando mais ou menos ao longo dos meses?',
+    savingsQuestion: 'Quanto sobrou das receitas em cada período, depois das despesas?',
     savingsRate: 'Taxa de economia',
     saved: 'Economizado',
     invested: 'Investido',
-    noIncome: 'Registre suas receitas para calcular a taxa de economia.',
+    savingsNote: 'Barra vermelha: período em que as despesas passaram das receitas.',
   },
 };

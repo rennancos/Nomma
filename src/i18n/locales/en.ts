@@ -42,10 +42,10 @@ export const en = {
     contributionsNote: 'Bars: monthly contributions. Line: total contributed. Returns are not included.',
     noInvestments: 'No contributions yet.',
     savingsTitle: 'Monthly savings',
-    savingsQuestion: 'Am I saving more or less over time?',
+    savingsQuestion: 'How much of my income was left in each period, after expenses?',
     savingsRate: 'Savings rate',
     saved: 'Saved',
     invested: 'Invested',
-    noIncome: 'Record your income to calculate the savings rate.',
+    savingsNote: 'Red bar: a period where expenses exceeded income.',
   },
 };

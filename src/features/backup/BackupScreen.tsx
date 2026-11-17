@@ -1,15 +1,46 @@
 import { useState } from 'react';
 import { Alert } from 'react-native';
-import { Button } from '@/components/Controls';
+import { Button, ChipSelect } from '@/components/Controls';
 import { Card, Screen } from '@/components/Layout';
 import { AppText } from '@/components/Text';
 import { useFinance } from '@/hooks/useFinance';
 import { confirm } from '@/hooks/useFinanceActions';
-import { BackupError, buildJsonBackup, buildTransactionsCsv, pickBackupFile, restoreJsonBackup, shareFile } from './export';
+import { BackupError, buildJsonBackup, buildTransactionsCsv, pickBackupFile, pickStatementFile, restoreJsonBackup, shareFile } from './export';
+import { importStatement, parseStatement } from './statement';
 
 export default function BackupScreen() {
   const { db, data, refresh } = useFinance();
-  const [busy, setBusy] = useState<'json' | 'csv' | 'import' | null>(null);
+  const [busy, setBusy] = useState<'json' | 'csv' | 'import' | 'ofx' | null>(null);
+  const accounts = data.accounts.filter((a) => !a.archived);
+  const [ofxAccount, setOfxAccount] = useState<string | null>(accounts.find((a) => a.type !== 'INVESTMENT')?.id ?? null);
+
+  const importBankStatement = async () => {
+    if (!ofxAccount) return;
+    setBusy('ofx');
+    try {
+      const content = await pickStatementFile();
+      if (content === null) return;
+      const entries = parseStatement(content);
+      if (entries.length === 0) {
+        Alert.alert('Nenhum lançamento encontrado', 'Escolha um extrato em OFX ou CSV, exportado pelo site ou app do seu banco.');
+        return;
+      }
+      const plan = await importStatement(db, ofxAccount, entries);
+      await refresh();
+      const lines = [
+        `${plan.inserts.length} lançamento(s) novo(s)`,
+        plan.transfers.length > 0 && `${plan.transfers.length} transferência(s) entre suas contas reconhecida(s)`,
+        plan.manual > 0 && `${plan.manual} já estavam lançados e foram ignorados`,
+        plan.repeated > 0 && `${plan.repeated} já importados antes`,
+      ];
+      Alert.alert('Extrato importado', lines.filter(Boolean).join('\n'));
+    } catch {
+      // Sem log do erro: pode conter valores financeiros. A gravação é uma transação só: em caso de falha, nada entra.
+      Alert.alert('Não foi possível importar', 'O arquivo é inválido ou está danificado. Nenhum lançamento foi adicionado.');
+    } finally {
+      setBusy(null);
+    }
+  };
 
   const exportAs = async (ext: 'json' | 'csv') => {
     setBusy(ext);
@@ -42,6 +73,12 @@ export default function BackupScreen() {
 
   return (
     <Screen size="form">
+      <Card>
+        <AppText variant="subtitle">Importar extrato do banco</AppText>
+        <AppText muted>Adiciona os lançamentos de um extrato OFX ou CSV à conta escolhida. Não repete o que já foi importado ou digitado, reconhece transferências entre suas contas e reaproveita a categoria de lançamentos com a mesma descrição.</AppText>
+        <ChipSelect label="Conta" options={accounts.map((a) => ({ value: a.id, label: a.name }))} value={ofxAccount} onChange={(v) => v && setOfxAccount(v)} />
+        <Button title="Importar extrato" icon="cloud-upload-outline" onPress={importBankStatement} loading={busy === 'ofx'} disabled={!ofxAccount} />
+      </Card>
       <Card>
         <AppText variant="subtitle">Backup completo (JSON)</AppText>
         <AppText muted>Todas as contas, movimentações, cartões, metas e configurações. Guarde fora do celular (Google Drive, e-mail) para poder restaurar se desinstalar o app ou trocar de aparelho.</AppText>

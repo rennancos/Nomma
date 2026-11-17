@@ -4,6 +4,7 @@ import { Card, ListRow, Screen, type IconName } from '@/components/Layout';
 const GROUPS: { title: string; icon: IconName; href: Href }[][] = [
   [
     { title: 'Assistente financeiro', icon: 'chatbubbles-outline', href: '/assistant' },
+    { title: 'Guia de primeiros passos', icon: 'help-circle-outline', href: '/getting-started' },
     { title: 'Conta', icon: 'person-circle-outline', href: '/account' },
   ],
   [

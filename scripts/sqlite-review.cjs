@@ -47,6 +47,7 @@ const cards = load(path.join(root, 'src/features/cards/repository.ts'));
 const recurring = load(path.join(root, 'src/features/recurring/repository.ts'));
 const seed = load(path.join(root, 'src/database/seed.ts'));
 const backup = load(path.join(root, 'src/features/backup/export.ts'));
+const stmt = load(path.join(root, 'src/features/backup/statement.ts'));
 const input = (amount = 1000) => ({ type: 'INCOME', amount, description: 'QA', categoryId: null,
   accountId: 'acc-main', destinationAccountId: null, date: '2026-09-30', notes: null,
   paymentMethod: null, institution: null, recurringId: null });
@@ -148,6 +149,16 @@ async function check(name, fn) {
     await backup.restoreJsonBackup(db, json);
     db = reopen();
     assert.deepEqual(JSON.parse(await backup.buildJsonBackup(db)).tables, JSON.parse(json).tables);
+  });
+  await check('extrato importa uma vez só e converte os dois lados de uma transferência', async (db) => {
+    const main = stmt.parseStatement('<STMTTRN><DTPOSTED>20260905<TRNAMT>-10.00<FITID>1<MEMO>Café<STMTTRN><DTPOSTED>20260905<TRNAMT>-10.00<FITID>1<MEMO>Café<STMTTRN><DTPOSTED>20260906<TRNAMT>-200.00<MEMO>Pix para carteira');
+    assert.equal((await stmt.importStatement(db, 'acc-main', main)).inserts.length, 3);
+    assert.deepEqual([(await stmt.importStatement(db, 'acc-main', main)).inserts.length, (await txs.listTransactions(db)).length], [0, 3]);
+    const wallet = stmt.parseStatement('Data;Descrição;Valor\n06/09/2026;Pix recebido;200,00');
+    assert.equal((await stmt.importStatement(db, 'acc-wallet', wallet)).transfers.length, 1);
+    assert.equal((await stmt.importStatement(db, 'acc-wallet', wallet)).manual, 1);
+    const list = await txs.listTransactions(db);
+    assert.deepEqual(list.map((t) => [t.type, t.amount, t.destinationAccountId]).sort(), [['EXPENSE', 1000, null], ['EXPENSE', 1000, null], ['TRANSFER', 20000, 'acc-wallet']]);
   });
   await check('backup inválido é recusado sem alterar os dados', async (db) => {
     await txs.insertTransaction(db, input(123));
