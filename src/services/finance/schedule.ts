@@ -47,6 +47,19 @@ export function recurrenceDate(
   return dateInMonth(month, rec.dayOfMonth);
 }
 
+/**
+ * Meses que o lançamento automático deve cobrir: do mês seguinte ao último já lançado até o atual
+ * (recupera meses em que o app não foi aberto). Sem lançamento anterior, só o mês atual:
+ * ligar o automático numa recorrência antiga não despeja o histórico inteiro nas contas.
+ */
+export function autoPostMonths(lastPosted: MonthKey | undefined, current: MonthKey): MonthKey[] {
+  const months: MonthKey[] = [];
+  for (let m = lastPosted && lastPosted < current ? addMonthsToKey(lastPosted, 1) : current; m <= current; m = addMonthsToKey(m, 1)) {
+    months.push(m);
+  }
+  return months;
+}
+
 /** Chave que identifica a ocorrência já lançada de uma recorrência. */
 export const occurrenceKey = (recurringId: string, month: MonthKey) => `${recurringId}|${month}`;
 

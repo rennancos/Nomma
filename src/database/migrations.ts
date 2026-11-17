@@ -156,7 +156,11 @@ async function v1(db: SQLiteDatabase) {
   }
 }
 
-const MIGRATIONS: ((db: SQLiteDatabase) => Promise<void>)[] = [v1];
+// Rendimento acumulado da conta (pode ser negativo): diferença entre o valor atual informado e o saldo contábil.
+const v2 = (db: SQLiteDatabase) =>
+  db.execAsync(`ALTER TABLE accounts ADD COLUMN yield_amount INTEGER NOT NULL DEFAULT 0 CHECK (typeof(yield_amount) = 'integer')`);
+
+const MIGRATIONS: ((db: SQLiteDatabase) => Promise<void>)[] = [v1, v2];
 
 export async function migrate(db: SQLiteDatabase): Promise<void> {
   // busy_timeout: se outro processo do app ainda segura o banco (ex.: reabertura logo após fechar à força),

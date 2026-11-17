@@ -3,7 +3,7 @@ import { Alert } from 'react-native';
 import { Button, TextField } from '@/components/Controls';
 import { Card, Screen } from '@/components/Layout';
 import { AppText } from '@/components/Text';
-import { confirm } from '@/hooks/useFinance';
+import { confirm } from '@/hooks/useFinanceActions';
 import { useTheme } from '@/hooks/useTheme';
 import { authConfigured, authErrorMessage, currentEmail, resetPassword, signIn, signOut, signUp } from '@/services/auth/firebase';
 

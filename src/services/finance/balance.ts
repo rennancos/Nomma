@@ -6,15 +6,15 @@ type BalanceTx = Pick<Transaction, 'type' | 'amount' | 'accountId' | 'destinatio
 type SummaryTx = Pick<Transaction, 'type' | 'amount' | 'date' | 'categoryId'>;
 
 /**
- * Saldo por conta = saldo inicial + receitas − saídas + entradas de transferência/aporte.
+ * Saldo por conta = saldo inicial + rendimento + receitas − saídas + entradas de transferência/aporte.
  * INCOME credita a conta; EXPENSE/INVESTMENT/TRANSFER debitam a conta de origem
  * e, se houver conta de destino (transferência ou aporte em conta de investimento), creditam o destino.
  */
 export function accountBalances(
-  accounts: Pick<Account, 'id' | 'initialBalance'>[],
+  accounts: (Pick<Account, 'id' | 'initialBalance'> & Partial<Pick<Account, 'yieldAmount'>>)[],
   txs: BalanceTx[],
 ): Map<string, number> {
-  const balances = new Map(accounts.map((a) => [a.id, a.initialBalance]));
+  const balances = new Map(accounts.map((a) => [a.id, a.initialBalance + (a.yieldAmount ?? 0)]));
   const add = (id: string | null, value: number) => {
     if (id !== null && balances.has(id)) balances.set(id, (balances.get(id) ?? 0) + value);
   };

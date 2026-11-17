@@ -46,11 +46,14 @@ try {
   $restoreVersion = @($config.expo.version, $config.expo.android.versionCode)
   $parts = $config.expo.version.Split('.')
   $versionCode = [int]$config.expo.android.versionCode
-  do {
+  # Versão definida à mão no app.json (ex.: 1.1.0) e ainda sem APK é usada como está; senão sobe o último número.
+  $version = $config.expo.version
+  $apk = Join-Path $root "builds\nomma-$version.apk"
+  while (Test-Path $apk) {
     $parts[2] = [int]$parts[2] + 1
     $version = $parts -join '.'
     $apk = Join-Path $root "builds\nomma-$version.apk"
-  } while (Test-Path $apk)
+  }
   $versionCode++
   $updated = $originalAppJson -replace '"version":\s*"[^"]*"', "`"version`": `"$version`"" -replace '"versionCode":\s*\d+', "`"versionCode`": $versionCode"
   [IO.File]::WriteAllText($appJson, $updated)

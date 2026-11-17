@@ -10,7 +10,7 @@ export interface AccountInput {
 
 export const listAccounts = (db: SQLiteDatabase) =>
   db.getAllAsync<Account>(
-    `SELECT id, name, type, initial_balance AS initialBalance, archived FROM accounts ORDER BY archived, created_at`,
+    `SELECT id, name, type, initial_balance AS initialBalance, yield_amount AS yieldAmount, archived FROM accounts ORDER BY archived, created_at`,
   );
 
 export async function saveAccount(db: SQLiteDatabase, input: AccountInput, id?: string): Promise<void> {
@@ -27,6 +27,9 @@ export async function saveAccount(db: SQLiteDatabase, input: AccountInput, id?: 
     );
   }
 }
+
+export const setAccountYield = (db: SQLiteDatabase, id: string, yieldAmount: number) =>
+  db.runAsync('UPDATE accounts SET yield_amount = ?, updated_at = ? WHERE id = ?', yieldAmount, nowISO(), id);
 
 export const setAccountArchived = (db: SQLiteDatabase, id: string, archived: boolean) =>
   db.runAsync('UPDATE accounts SET archived = ?, updated_at = ? WHERE id = ?', archived ? 1 : 0, nowISO(), id);

@@ -1,6 +1,6 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { newId, nowISO } from '@/database/id';
-import { occurrenceKey, recurrenceDate } from '@/services/finance/schedule';
+import { autoPostMonths, occurrenceKey, recurrenceDate } from '@/services/finance/schedule';
 import type { Recurring } from '@/types';
 import { monthKeyOf, todayISO, type MonthKey } from '@/utils/date';
 import { insertTransaction } from '../transactions/repository';
@@ -71,16 +71,24 @@ export async function postOccurrence(db: SQLiteDatabase, r: Recurring, month: Mo
 }
 
 /**
- * Lança automaticamente as recorrências marcadas como automáticas (ex.: salário) cujo dia já chegou no mês atual.
- * ponytail: só o mês corrente; meses em que o app não foi aberto não são retroativos (o usuário lança manualmente).
+ * Lança automaticamente as recorrências marcadas como automáticas (ex.: salário) cujo dia já chegou,
+ * incluindo os meses em que o app não foi aberto desde o último lançamento (ver autoPostMonths).
  */
 export async function postDueRecurrences(db: SQLiteDatabase, today = todayISO()): Promise<void> {
-  const month = monthKeyOf(today);
+  const current = monthKeyOf(today);
   const [recurrings, posted] = await Promise.all([listRecurrings(db), listPostedKeys(db)]);
+  const lastPosted = new Map<string, MonthKey>();
+  for (const key of posted) {
+    const sep = key.lastIndexOf('|');
+    const id = key.slice(0, sep);
+    const month = key.slice(sep + 1);
+    if (month > (lastPosted.get(id) ?? '')) lastPosted.set(id, month);
+  }
   for (const r of recurrings) {
-    const due = recurrenceDate(r, month);
-    if (r.autoPost && due && due <= today && !posted.has(occurrenceKey(r.id, month))) {
-      await postOccurrence(db, r, month, today);
+    if (!r.autoPost) continue;
+    for (const month of autoPostMonths(lastPosted.get(r.id), current)) {
+      const due = recurrenceDate(r, month);
+      if (due && due <= today && !posted.has(occurrenceKey(r.id, month))) await postOccurrence(db, r, month, today);
     }
   }
 }

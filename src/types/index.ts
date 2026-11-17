@@ -13,6 +13,8 @@ export interface Account {
   name: string;
   type: AccountType;
   initialBalance: number;
+  /** Rendimento acumulado (centavos, pode ser negativo); entra no saldo da conta. */
+  yieldAmount: number;
   archived: Flag;
 }
 

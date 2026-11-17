@@ -8,7 +8,7 @@ const tx = (id: string, type: Transaction['type'], amount: number, patch: Partia
   institution: null, recurringId: null, occurrenceMonth: null, createdAt: '', updatedAt: '', ...patch,
 });
 const fixture = (): AssistantData => ({
-  accounts: [{ id: 'checking', name: 'Conta principal', type: 'CHECKING', initialBalance: 10000, archived: 0 }, { id: 'invest', name: 'Investimentos', type: 'INVESTMENT', initialBalance: 0, archived: 0 }],
+  accounts: [{ id: 'checking', name: 'Conta principal', type: 'CHECKING', initialBalance: 10000, yieldAmount: 0, archived: 0 }, { id: 'invest', name: 'Investimentos', type: 'INVESTMENT', initialBalance: 0, yieldAmount: 0, archived: 0 }],
   categories: [{ id: 'food', name: 'Alimentação', kind: 'EXPENSE', isDefault: 0, archived: 0 }],
   cards: [{ id: 'card', name: 'Meu cartão', bank: 'Banco A', limitAmount: 100000, closingDay: 1, dueDay: 10, archived: 0 }],
   installments: [

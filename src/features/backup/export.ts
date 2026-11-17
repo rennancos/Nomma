@@ -48,8 +48,8 @@ export async function restoreJsonBackup(db: SQLiteDatabase, content: string): Pr
   if (backup?.app !== 'financas' || typeof backup.tables !== 'object' || backup.tables === null) {
     throw new BackupError('Este arquivo não é um backup do Nomma.');
   }
-  // ponytail: só existe a versão 1 do banco; backups antigos precisarão de conversão quando surgir a v2.
-  if (backup.schemaVersion !== SCHEMA_VERSION) {
+  // Backups antigos entram sem conversão enquanto as migrations só adicionarem colunas com DEFAULT (caso da v2).
+  if (typeof backup.schemaVersion !== 'number' || backup.schemaVersion < 1 || backup.schemaVersion > SCHEMA_VERSION) {
     throw new BackupError('Este backup é de outra versão do app e não pode ser importado.');
   }
   const tables = backup.tables;

@@ -3,7 +3,8 @@ import { Alert } from 'react-native';
 import { Button } from '@/components/Controls';
 import { Card, Screen } from '@/components/Layout';
 import { AppText } from '@/components/Text';
-import { confirm, useFinance } from '@/hooks/useFinance';
+import { useFinance } from '@/hooks/useFinance';
+import { confirm } from '@/hooks/useFinanceActions';
 import { BackupError, buildJsonBackup, buildTransactionsCsv, pickBackupFile, restoreJsonBackup, shareFile } from './export';
 
 export default function BackupScreen() {

@@ -9,7 +9,8 @@ import { Screen, styles } from '@/components/Layout';
 import { AppText } from '@/components/Text';
 import { PAYMENT_LABELS, TYPE_LABELS } from '@/constants/defaults';
 import { spacing } from '@/constants/theme';
-import { confirm, notify, useAction, useFinance, useLastFound } from '@/hooks/useFinance';
+import { useFinance, useLastFound } from '@/hooks/useFinance';
+import { confirm, notify, useAction } from '@/hooks/useFinanceActions';
 import { useTheme } from '@/hooks/useTheme';
 import { transactionSchema } from '@/schemas';
 import type { PaymentMethod, TransactionType } from '@/types';
@@ -34,7 +35,8 @@ const TITLES: Record<TransactionType, string> = {
 };
 
 export default function TransactionFormScreen() {
-  const params = useLocalSearchParams<{ id?: string; type?: string }>();
+  // accountId: conta de origem pré-selecionada (resgate de investimento = transferência a partir dela).
+  const params = useLocalSearchParams<{ id?: string; type?: string; accountId?: string }>();
   const { data } = useFinance();
   const { run, busy } = useAction();
   const { colors } = useTheme();
@@ -45,6 +47,7 @@ export default function TransactionFormScreen() {
   const activeAccounts = data.accounts.filter((a) => !a.archived || a.id === existing?.accountId);
   const liquid = activeAccounts.filter((a) => a.type !== 'INVESTMENT');
   const investAccount = activeAccounts.find((a) => a.type === 'INVESTMENT');
+  const origin = activeAccounts.find((a) => a.id === params.accountId);
   const [showNotes, setShowNotes] = useState(Boolean(existing?.notes));
 
   const { control, handleSubmit, setValue } = useForm({
@@ -54,9 +57,10 @@ export default function TransactionFormScreen() {
       amount: existing ? centsToInput(existing.amount) : '',
       description: existing?.description ?? '',
       categoryId: existing?.categoryId ?? null,
-      accountId: existing?.accountId ?? liquid[0]?.id ?? activeAccounts[0]?.id ?? '',
+      accountId: existing?.accountId ?? origin?.id ?? liquid[0]?.id ?? activeAccounts[0]?.id ?? '',
       destinationAccountId:
-        existing?.destinationAccountId ?? (initialType === 'INVESTMENT' ? (investAccount?.id ?? null) : null),
+        existing?.destinationAccountId ??
+        (initialType === 'INVESTMENT' ? (investAccount?.id ?? null) : origin && initialType === 'TRANSFER' ? (liquid[0]?.id ?? null) : null),
       date: formatDateBR(existing?.date ?? todayISO()),
       paymentMethod: existing?.paymentMethod ?? null,
       cardId: data.cards[0]?.id ?? null,

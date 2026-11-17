@@ -4,6 +4,7 @@ import { accountBalances, balanceTotals, monthSummary, totalsByCategory } from '
 import { emptyFilter, filterTransactions, installmentsOfMonth } from '../filters';
 import { budgetMessage, budgetUsage, dailyAllowance, nextPayday, projectMonthEnd } from '../planning';
 import {
+  autoPostMonths,
   buildInstallments,
   cardInvoiceDueDate,
   cardStatus,
@@ -36,9 +37,9 @@ function tx(p: Partial<Transaction> & Pick<Transaction, 'type' | 'amount'>): Tra
 }
 
 const accounts: Account[] = [
-  { id: 'corrente', name: 'Conta corrente', type: 'CHECKING', initialBalance: 100000, archived: 0 },
-  { id: 'carteira', name: 'Carteira', type: 'WALLET', initialBalance: 5000, archived: 0 },
-  { id: 'invest', name: 'Investimentos', type: 'INVESTMENT', initialBalance: 0, archived: 0 },
+  { id: 'corrente', name: 'Conta corrente', type: 'CHECKING', initialBalance: 100000, yieldAmount: 0, archived: 0 },
+  { id: 'carteira', name: 'Carteira', type: 'WALLET', initialBalance: 5000, yieldAmount: 0, archived: 0 },
+  { id: 'invest', name: 'Investimentos', type: 'INVESTMENT', initialBalance: 0, yieldAmount: 0, archived: 0 },
 ];
 
 describe('saldo por conta', () => {
@@ -200,6 +201,19 @@ describe('recorrências e agenda do mês', () => {
     expect(recurrenceDate(rec({ startDate: '2026-09-20' }), '2026-10')).toBe('2026-10-05');
     expect(recurrenceDate(rec({ active: 0 }), '2026-10')).toBeNull();
     expect(recurrenceDate(rec({ dayOfMonth: 31 }), '2026-02')).toBe('2026-02-28');
+  });
+
+  it('lançamento automático recupera os meses desde o último lançado, sem despejar histórico antigo', () => {
+    expect(autoPostMonths('2026-08', '2026-11')).toEqual(['2026-09', '2026-10', '2026-11']);
+    expect(autoPostMonths('2026-11', '2026-11')).toEqual(['2026-11']);
+    expect(autoPostMonths(undefined, '2026-11')).toEqual(['2026-11']); // nunca lançou: só o mês atual
+    expect(autoPostMonths('2026-12', '2026-11')).toEqual(['2026-11']); // mês futuro pago adiantado
+    expect(autoPostMonths('2025-12', '2026-01')).toEqual(['2026-01']);
+  });
+
+  it('rendimento da conta entra no saldo', () => {
+    const b = accountBalances([{ id: 'invest', initialBalance: 100000, yieldAmount: -2500 }], []);
+    expect(b.get('invest')).toBe(97500);
   });
 
   const recurrings = [
